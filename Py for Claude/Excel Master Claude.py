@@ -119,10 +119,16 @@ HEADERS = [
 # Each row must have exactly the same number of values as HEADERS.
 
 DATA = [
-    # Example format - Claude replaces with real data:
-    # ['NRTI', 'Tenofovir (Viread)', 'Oral', 'Adenosine analogue → inhibits RT', '🟢 HIV - First line\nPrEP', 'GI, flatulence\n⚠️ Lactic acidosis', 'Severe renal impairment', 'Rapid if alone', 'None major', 'Truvada (with emtricitabine)', 'Monitor renal function'],
-    # ['NRTI', 'Lamivudine (Epivir)', 'Oral', 'Cytosine analogue → inhibits RT', 'HIV treatment\nHBV', 'Headache, fatigue', 'None absolute', 'Rapid if alone', 'None major', 'With abacavir', '✅ Safe in pregnancy'],
-    # ['NNRTI', 'Rilpivirine (Edurant)', 'Oral', 'Binds RT allosteric site', 'HIV (with NRTIs)', 'Depression, headache', 'Hepatitis co-infection', 'Rapid if alone', 'None major', 'Cabenuva', 'Must use with NRTIs'],
+    # SAMPLE DATA - Demonstrates auto-coloring feature
+    ['NRTI', 'Tenofovir (Viread)', 'Oral', 'Adenosine analogue → inhibits RT', '🟢 HIV - First line\nPrEP', 'GI, flatulence\n⚠️ Lactic acidosis', 'Severe renal impairment', 'Rapid if alone', 'None major', 'Truvada (with emtricitabine)', 'Monitor renal function'],
+    ['NRTI', 'Lamivudine (Epivir)', 'Oral', 'Cytosine analogue → inhibits RT', 'HIV treatment\nHBV', 'Headache, fatigue', 'None absolute', 'Rapid if alone', 'None major', 'With abacavir', '✅ Safe in pregnancy'],
+    ['NRTI', 'Emtricitabine (Emtriva)', 'Oral', 'Cytosine analogue → inhibits RT', 'HIV treatment\nHBV', 'Headache, nausea', 'None absolute', 'Rapid if alone', 'None major', 'Truvada, Atripla', 'Similar to lamivudine'],
+    ['NNRTI', 'Efavirenz (Sustiva)', 'Oral', 'Binds RT allosteric site', 'HIV (with NRTIs)', 'CNS effects, vivid dreams\n⚠️ Teratogenic', '🚫 Pregnancy', 'Rapid if alone', 'CYP3A4 inducer', 'Atripla', 'Take at bedtime'],
+    ['NNRTI', 'Rilpivirine (Edurant)', 'Oral', 'Binds RT allosteric site', 'HIV (with NRTIs)', 'Depression, headache', 'Hepatitis co-infection', 'Rapid if alone', 'None major', 'Cabenuva', 'Must take with food'],
+    ['Protease Inhibitor', 'Ritonavir (Norvir)', 'Oral', 'Inhibits HIV protease', 'HIV - Booster', 'GI upset, lipodystrophy', 'Hepatic impairment', 'Moderate', 'Many CYP interactions', 'Boosting other PIs', '💊 Used as booster'],
+    ['Protease Inhibitor', 'Darunavir (Prezista)', 'Oral', 'Inhibits HIV protease', '🟢 HIV - First line PI', 'Rash, GI upset', 'Sulfa allergy', 'High barrier', 'CYP3A4 substrate', 'With ritonavir', 'Must boost with ritonavir'],
+    ['Integrase Inhibitor', 'Dolutegravir (Tivicay)', 'Oral', 'Inhibits integrase enzyme', '🟢 HIV - First line', 'Insomnia, headache', 'None absolute', 'High barrier', 'Antacids reduce absorption', 'Triumeq, Dovato', '✅ Preferred first-line'],
+    ['Integrase Inhibitor', 'Bictegravir (in Biktarvy)', 'Oral', 'Inhibits integrase enzyme', '🟢 HIV - First line', 'Diarrhea, nausea', 'None absolute', 'High barrier', 'Rifampin contraindicated', 'Biktarvy only', '✅ Single tablet regimen'],
 ]
 
 # Output filename - Claude updates based on topic

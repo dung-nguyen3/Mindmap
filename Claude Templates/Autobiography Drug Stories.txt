@@ -1,0 +1,253 @@
+# **PROMPT: Drug Autobiography Story Generator**
+
+## **Claude's TASK:**
+
+You are an expert at transforming the content in the attached document into an engaging "Drug Autobiography" stories. Each drug should be personified as a character who tells their own story, explaining their mechanisms, uses, and side effects through creative narratives, metaphors, and character interactions.
+
+## **STORYTELLING GUIDELINES:**
+
+### **1. CHARACTER DEVELOPMENT**
+- **Personify each drug** as a character with personality traits that reflect their pharmacological properties
+- Use titles that reflect their role (Mr., Ms., Dr., Professor, Captain, Sir, Lady, General, etc.)
+- Create **family relationships** for drugs in the same class (siblings, cousins, brothers, etc.)
+- Give drugs **personalities** that match their characteristics:
+  - Selective drugs are "focused" or "precise"
+  - Non-selective drugs are "broad" or "indiscriminate"
+  - Toxic drugs might be "dangerous" or have "dark secrets"
+  - Newer drugs can be "young" or "modern"
+  - Older drugs can be "veterans" or "old-timers"
+
+### **2. NARRATIVE STRUCTURE**
+
+Each drug story should include:
+
+**A. INTRODUCTION**
+- Drug introduces themselves by name (generic and brand name)
+- Brief statement of their main role/mission
+
+**B. MECHANISM OF ACTION (as a story)**
+- Use creative analogies and metaphors
+- Examples:
+  - Blocking = "stealing keys," "putting up barriers," "cork in a bottle"
+  - Inhibiting = "sabotaging the factory," "removing the ignition"
+  - Activating = "turning on switches," "starting engines"
+  - Binding = "lock and key," "fitting into slots"
+- Explain complex mechanisms through relatable scenarios
+
+**C. CHARACTER INTERACTIONS**
+- Drugs can have:
+  - **Partners** (drugs used in combination)
+  - **Bodyguards/Protectors** (drugs that reduce toxicity)
+  - **Enemies** (drug interactions)
+  - **Rivals** (competing drugs)
+  - **Family members** (same drug class)
+
+**D. UNIQUE TRAITS (Side Effects & Special Properties)**
+- Frame side effects as:
+  - "Secrets" (toxic effects)
+  - "Weaknesses" (limitations)
+  - "Dark sides" (serious adverse effects)
+  - "Quirks" (unique characteristics)
+  - "Superpowers" (unique advantages)
+
+**E. CLINICAL PEARLS**
+- Include as dialogue or dramatic revelations
+- Use phrases like:
+  - "But here's my secret..."
+  - "Let me tell you about my arch-enemy..."
+  - "My greatest strength is..."
+  - "Doctors must NEVER..."
+  - "Always pair me with..."
+
+### **3. DIALOGUE & CONVERSATIONS**
+
+Create conversations between drugs that explain:
+- Differences between similar drugs
+- Why one drug is preferred over another
+- Drug-drug interactions
+- Combination therapy rationale
+
+**Example format:**
+```
+Mr. Atenolol asked, "But brother, why do doctors prefer you for anxiety?"
+
+Mr. Propranolol explained, "Because I can cross the blood-brain barrier to calm the central nervous system. You're water-soluble, so you can't get into the brain as easily. But that makes YOU better for patients with asthma!"
+```
+
+### **4. CREATIVE ANALOGIES TO USE**
+
+**For Mechanisms:**
+- Enzymes = factories, assembly lines, workers
+- Receptors = locks, doors, switches, docking stations
+- Cell cycle = traffic lights, checkpoints, stages of a journey
+- Blood-brain barrier = security checkpoint, fortress wall
+- Metabolism = transformation, costume changes
+- Protein binding = passengers on a bus, seats taken
+
+**For Drug Actions:**
+- Agonists = keys that turn locks
+- Antagonists = keys that block locks
+- Competitive inhibition = fighting for seats
+- Non-competitive = sabotaging the machine itself
+- Irreversible binding = super glue
+- Prodrugs = Dr. Jekyll and Mr. Hyde, transformations
+
+**For Pharmacokinetics:**
+- Absorption = entry into the kingdom
+- Distribution = traveling through the body
+- Metabolism = changing disguises
+- Excretion = leaving through the exit doors
+
+### **5. SPECIAL STORY ELEMENTS**
+
+Include these dramatic elements where appropriate:
+
+**🎭 DRAMATIC REVEALS:**
+- "But I must confess my THREE toxic secrets..."
+- "Here's where my dark side appears..."
+- "My Achilles' heel is..."
+
+**⚡ WARNINGS:**
+- "NEVER combine me with..."
+- "Doctors must ALWAYS..."
+- "CRITICAL: Test for... before using me!"
+
+**🦸 RESCUE SCENARIOS:**
+- Describe how antidotes/protective agents "save the day"
+- Frame them as bodyguards, protectors, or rescue squads
+
+**👥 FAMILY DYNAMICS:**
+- Older vs. newer generation drugs
+- Competition between family members
+- "Golden child" vs. others
+- Generational improvements
+
+**Be entertaining and engaging**
+
+### **6. FORMATTING REQUIREMENTS**
+
+```markdown
+## **"[Creative Title]: [Subtitle]"**
+
+### **[Character Name]: [Descriptor]**
+
+"[First-person narrative in quotes]
+
+[Drug introduces themselves]
+
+[Mechanism explanation with analogies]
+
+[Character interactions if relevant]
+
+[Side effects framed as secrets/weaknesses]
+
+[Clinical pearls and warnings]
+
+[Memorable closing statement]"
+```
+
+### **7. KEY INFORMATION TO INCLUDE**
+
+For EACH drug, weave in:
+- ✅ Generic and brand name(s)
+- ✅ Drug class
+- ✅ Mechanism of action (simplified with analogies)
+- ✅ Clinical uses
+- ✅ Unique/important side effects
+- ✅ Drug interactions (especially dangerous ones)
+- ✅ Contraindications
+- ✅ Special populations (pregnancy, pediatrics, etc.)
+- ✅ Antidotes or protective agents if applicable
+- ✅ Why it's preferred over alternatives (if applicable)
+- ✅ Dosing quirks or special administration requirements
+
+### **8. TONE GUIDELINES**
+
+- **Engaging and memorable** - make it stick in students' minds
+- **Conversational** - drugs speak naturally
+- **Educational** - all facts must be accurate
+- **Creative** - use vivid imagery and analogies
+- **Appropriate** - maintain professionalism while being fun
+- **Bold important concepts** for emphasis
+- **Use CAPITALS** for critical warnings or key concepts
+
+### **9. ORGANIZATION**
+
+Group drugs by:
+1. **Drug class families** (tell their collective story first)
+2. **Individual drug autobiographies** within each class
+3. **Special sections** for:
+   - Drug interactions (as dramatic conflicts)
+   - Rescue/protective agents (as hero stories)
+   - Resistance mechanisms (as villains or obstacles)
+
+### **10. ADDITIONAL CREATIVE ELEMENTS**
+
+Consider adding:
+- **Origin stories** (how the drug was discovered)
+- **Evolution** (first generation → newer generations)
+- **Rivalries** (competing drugs or classes)
+- **Legendary status** (breakthrough drugs)
+- **Redemption arcs** (drugs that found new uses)
+- **Cautionary tales** (drugs with serious toxicities)
+
+---
+
+## **EXAMPLE OUTPUT FORMAT:**
+
+```markdown
+# **The [Drug Class Name]: [Creative Title]**
+
+[Class introduction with family overview]
+
+---
+
+## **"[Subgroup 1]: [Creative Subtitle]"**
+
+### **[Drug Character Name]: [Descriptor]**
+
+"[First-person autobiography narrative...]"
+
+### **[Drug Character Name]: [Descriptor]**
+
+"[First-person autobiography narrative...]"
+
+---
+
+## **"[Subgroup 2]: [Creative Subtitle]"**
+
+[Continue pattern...]
+
+---
+
+## **Summary: [Creative Conclusion Title]**
+
+[Wrap-up explaining how all drugs work together or compare]
+```
+
+---
+
+## **SPECIAL INSTRUCTIONS:**
+
+1. **Extract ALL drugs** mentioned in the document
+2. **Group by mechanism** or therapeutic use
+3. **Create connections** between related drugs
+4. **Highlight clinical pearls** that students must remember
+5. **Emphasize dangerous interactions** or serious adverse effects
+6. **Make mnemonics memorable** through the character traits
+7. **Use the exact information** from the source document - don't add external knowledge
+8. **Include visual descriptions** from any images/diagrams mentioned in the source
+
+---
+
+## **NOW, ANALYZE THE ATTACHED DOCUMENT AND CREATE DRUG AUTOBIOGRAPHY STORIES!**
+
+**Source Document:** [Document name/description]
+
+**Focus on:** [Specify if you want focus on particular drugs or ALL drugs]
+
+**Desired length:** [Comprehensive / Brief summaries / Specific drugs only]
+
+---
+
+**BEGIN GENERATING STORIES! 🎭**

@@ -1,0 +1,137 @@
+# Master Comparison Tables Tab
+
+## CRITICAL REQUIREMENTS
+
+1. **Verbatim Objectives**: Copy every learning objective exactly as written. Look for: "Learning Objectives:", "Objectives:", "By the end of...", "Goals:". Do not paraphrase.
+2. **Objective + Answer Pairing in Excel**: For each objective (LO1, LO2, ...), create a paired section: the objective text and the compiled answer content on the same worksheet section or adjacent columns/rows so they are never separated.
+3. **Source Only**: Use only the provided files. If information is missing, write: `[Not specified in file]`.
+4. **No External Knowledge**: Do not add information not explicitly stated in the files.
+
+## STEP 1: EXTRACT AND ORGANIZE CONTENT
+
+### Find Objectives
+- Search for "Learning Objectives:", "Objectives:", "By the end of...", "Goals:". Copy verbatim. Number as LO1, LO2, ...
+
+### Find Answers
+- Search the file(s) for keywords from each objective. Compile definitions, explanations, criteria, management, high-yield notes, exam high-yield/must knows and tables.
+## Tab Structure Overview
+
+###  Tab 1: Learning Objectives
+- **Purpose:** Detailed Q&A format answering each learning objective
+- **Content:** Full explanations with examples, mechanisms, clinical scenarios
+- **When to use:** For in-depth understanding of each specific objective
+
+###  Tab 2: Key Comparisons  
+- **Purpose:** Focused side-by-side comparisons for specific topic groups
+- **Content:** Detailed comparison tables for related conditions (e.g., "White Lesions Comparison", "Viral vs Bacterial Pharyngitis")
+
+When creating Key Comparisons tab:
+1. Prioritize comparisons students frequently confuse
+2. Focus on actionable clinical decisions (not just theory)
+3. Include SPECIFIC treatments with EXACT dosing (never vague)
+4. Use treatment-focused tables (what to prescribe in each scenario)
+5. Include age-based and severity-based algorithms
+6. Highlight hallmark/pathognomonic findings
+7. Provide "if-then" clinical decision rules
+8. Include urgency levels for referrals/complications
+9. Use consistent formatting throughout
+10. End with high-yield summary pearls
+11. Multiple side by side comparison table charts. Each table chart should compare 1-2 category  at a time to help break it down and differentiate. (For example: If comparing Clinical Presentation, Diagnosis, and Treatment for Condition A, B, C, create one chart comparing clinical presentation in Conditions A, B, and C. Create a separate chart to compare treatment for conditions A, B, and C, and so on. 
+
+
+### Tab 3: Master Comparison Tables 
+- **Purpose:** Comprehensive "everything in one place" reference tables
+- **Content:** COMPLETE differential diagnosis or drug tables consolidating ALL conditions from the lecture
+
+### 🔍 Tab 4: Summary
+- **Purpose:** High-level rapid review with mnemonics and pearls
+- **Content:** One-sentence summaries, mnemonics, "If You See X Think Y" , critical values, key definitions, treatment modalities
+- **When to use:** For quick review before exams or clinical encounters
+
+
+---
+
+## Example Structure
+
+### Red Eye Lecture Would Have:
+
+**Tab 1 (Learning Objectives):**
+- LO #1: Describe the pathophysiology of conjunctivitis → [Full explanation]
+- LO #2: Differentiate acute angle-closure glaucoma from other causes → [Full explanation]
+- etc.
+
+**Tab 2 (Key Comparisons):**
+- Viral vs Bacterial vs Allergic Conjunctivitis (detailed 3-way comparison)
+- Episcleritis vs Scleritis (focused 2-way comparison)
+- Preseptal vs Orbital Cellulitis (focused 2-way comparison)
+
+**Tab 3 (Master Comparison Tables):**
+- **Complete Red Eye Differential Diagnosis** (ALL 14+ conditions in one massive table)
+  - Rows: Viral conjunctivitis, bacterial conjunctivitis, allergic conjunctivitis, subconjunctival hemorrhage, corneal abrasion, corneal ulcer, episcleritis, scleritis, iritis, acute angle-closure glaucoma, hyphema, chemical burn, preseptal cellulitis, orbital cellulitis
+  - Columns: Vision, Pain, Discharge, Pupil, IOP, Key Features, Management
+- **Quick Reference: When to Refer to Ophthalmology** (urgent vs routine referrals)
+
+**Tab 4 (Summary):**
+- One-sentence summaries
+- Mnemonics (e.g., "FEVER" for corneal ulcer features)
+- "If you see X, Think Y"
+- Critical IOP values
+- Key definitions (hyphema, hypopyon, ciliary flush)
+- Final high-yield pearls
+
+For medical conditions files, All Tabs should have information related to the learning 
+objectives. 
+
+For pharmacology/drug files, all tabs should have information related to the drugs mentioned or if not mentioned then drugs in the source file. 
+
+---
+
+## Formatting Tips
+
+### Color-Coding Emergency Level
+```html
+<!-- Emergency (red tint) -->
+<tr style="background: #ffebee;">
+    <td><strong>Acute Angle-Closure Glaucoma</strong></td>
+    <td><span class="highlight-red">Severely decreased</span></td>
+    ...
+</tr>
+
+<!-- Urgent (orange tint) -->
+<tr style="background: #fff3e0;">
+    <td><strong>Corneal Ulcer</strong></td>
+    <td>Decreased</td>
+    ...
+</tr>
+
+<!-- Routine (white) -->
+<tr>
+    <td><strong>Viral Conjunctivitis</strong></td>
+    <td>Normal</td>
+    ...
+</tr>
+```
+
+### Inline Highlighting
+- `<span class="highlight-red">EMERGENCY</span>` - Life-threatening
+- `<span class="highlight-yellow">URGENT</span>` - Time-sensitive
+- `<span class="highlight-purple">Pathognomonic sign</span>` - Diagnostic feature
+- `<span class="highlight-blue">Distinguishing feature</span>` - Differentiating finding
+- `<span class="highlight-green">Normal value</span>` - Expected range
+
+### Spacing Between Tables
+```html
+<h3 style="margin-top: 40px;"> Next Topic Complete Comparison</h3>
+```
+
+---
+
+## Benefits
+
+1. **Complete Reference:** Students see EVERYTHING in one place
+2. **Emergency Recognition:** Red/orange backgrounds immediately highlight critical conditions
+3. **Pattern Recognition:** Side-by-side viewing helps identify distinguishing features
+4. **Efficient Review:** One table = entire differential diagnosis
+5. **Clinical Decision Support:** "When to Refer" tables guide appropriate consultation
+
+---

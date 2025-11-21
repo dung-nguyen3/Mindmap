@@ -1,0 +1,695 @@
+# Word Document Learning Objective Instructions
+
+---
+
+## BEFORE STARTING - VERIFICATION CHECKLIST
+
+**STOP! Complete this verification BEFORE beginning any work:**
+
+```
+☐ Which source file am I using? __________________________________
+☐ Which instruction template am I following? Updated WORD LO.txt
+☐ Am I using ONLY this source file (no external knowledge)? YES / NO
+☐ MANDATORY: Will I use WebSearch to research mnemonics and analogies? YES
+☐ Where will I save output? [Class]/[Exam]/Claude Study Tools/
+```
+
+**Type out or state your answers to these questions before proceeding.**
+
+---
+## Purpose
+Create comprehensive, color-coded Word document study guides from source material with learning objectives, comparison tables, and memory aids.
+
+---
+
+## CRITICAL RULES
+
+### Rule 1: Source Material Usage
+**USE SOURCE FILE ONLY for content:**
+- Facts and definitions
+- Clinical findings and exam techniques
+- Diagnostic criteria and exam procedures
+- Condition descriptions and presentations
+- Anatomical information
+- **NO page references needed**
+
+**USE YOUR MEDICAL TRAINING (built-in knowledge) for:**
+- **Clinical pearls and practical clinical wisdom** - Use clinical reasoning, not just source facts
+- **High-yield exam points** - Board-relevant information and clinical significance
+- **"If X think Y" clinical associations** - Pattern recognition and clinical reasoning
+- **Clinical context and practical tips** - How information is used in practice
+
+**CRITICAL DISTINCTION - Clinical Pearls Quality:**
+- ❌ BAD Clinical Pearl (just restating source): "IgM = acute infection"
+- ✅ GOOD Clinical Pearl (clinical reasoning): "When IgM+ but IgG- in pregnancy, think primary infection risk to fetus. IgG+ alone = prior immunity, safe."
+- ❌ BAD: "Antibody titers measure concentration"
+- ✅ GOOD: "Rising titers (4-fold increase) between acute and convalescent samples = active infection. Single high titer can't distinguish old from new."
+
+**MUST RESEARCH via WebSearch (MANDATORY):**
+- **Memory tricks and mnemonics - USE WEB SEARCH to find proven, existing mnemonics (do NOT invent them)**
+- **Memory aids/tricks - RESEARCH effective memory techniques using web search**
+- **Analogies - RESEARCH good analogies using web search to explain mechanisms and concepts**
+
+**CRITICAL: You MUST actively use WebSearch tool to find:**
+- Established medical mnemonics for the topics
+- Proven memory techniques, memory aids, and memory tricks
+- Good analogies that explain complex mechanisms
+
+
+**EXCEPTION FOR CRITICAL INFO:**
+- If you believe information is VERY important/must-know that's not in source, include it BUT mark with asterisk (*) so user knows it's external knowledge
+- Try to minimize these additions - only truly critical information
+
+### Rule 2: Structure Requirements
+**Every learning objective MUST have:**
+1. Verbatim learning objective text (from source)
+2. **Summary: Bullet-point outline answering the learning objective. No page references.**
+3. **Tables: Create Category/Details tables for single conditions OR Comparison tables for 2+ items. No page references needed.**
+4. Clinical pearls/high-yield boxes
+5. **Memory tricks/mnemonics section - MUST use WebSearch to research GOOD mnemonics (complete phrases/stories, NOT letter combinations)**
+6. **Analogy box with 2-4 sentences - MUST research good analogies using WebSearch**
+7. Page break
+
+### Rule 3: Arrow Usage for Directional Changes
+**TABLES ONLY - Use DOUBLE arrows (↑↑ ↓↓):**
+- **In table cells:** Use ↑↑ for "high/elevated/increased", ↓↓ for "low/decreased/reduced"
+- **Table Examples:**
+  - ✅ "IgM ↑↑" (in table cell)
+  - ✅ "Platelet count ↓↓" (in table cell)
+
+**OUTSIDE TABLES (clinical pearls, summary, boxes) - Use WORDS or SINGLE arrows (↑ ↓):**
+- **Can use either words OR single arrows** - both acceptable
+- **Examples:**
+  - ✅ "IgG increase in paired samples" (words)
+  - ✅ "IgG ↑ in paired samples" (single arrow)
+  - ✅ "When IgM elevated but IgG low" (words)
+  - ✅ "When IgM ↑ but IgG ↓" (single arrows)
+  - ✅ "Vaccination goal: Generate high IgG without disease" (words)
+  - ✅ "Vaccination goal: Generate IgG ↑ without disease" (single arrow)
+  - ❌ "Generate IgG ↑↑ without disease" (NO double arrows outside tables)
+
+**Only use emojis for critical information:**
+  - ⚠️ Contraindications/warnings
+  - 🟢 First-line therapy/safe options
+  - ❗ Must-know critical information
+
+---
+
+## DOCUMENT STRUCTURE
+
+### Required Tabs (Sections)
+The Word document must have 4 main sections (tabs):
+
+#### Learning Objectives
+- Each learning objective gets its own subsection
+- Format:
+  ```
+  Learning Objective #X: [verbatim text from source]
+
+  Summary: Myelodysplastic syndrome is a malignant stem cell disorder causing bone marrow failure. It primarily affects patients over age 60 and is 80% idiopathic, with 20% related to chemotherapy or radiation. Key diagnostic criteria include cytopenias, 1-20% blasts in bone marrow, and clonal hematopoiesis.
+
+  [TABLE 1: Category/Details table OR Comparison table]
+
+  [TABLE 2: Additional tables as needed]
+
+  [Clinical Pearls & High-Yield Points Box]
+
+  [Memory Tricks/Mnemonics Box - GOOD mnemonics only!]
+
+  [Analogy Box]
+  ```
+
+#### Key Comparisons
+- Side-by-side comparison tables
+- Focus on commonly confused or similar conditions
+- Examples:
+  - Testicular Torsion vs Epididymitis
+  - Phimosis vs Paraphimosis
+  - Epispadias vs Hypospadias
+  - Indirect vs Direct vs Femoral Hernias
+
+## Key Comparison Charts Guidelines
+- Create additional key comparison charts for information with similar categories that need differentiation
+- Look for patterns across topics that students need to compare and contrast
+- Examples:
+  - For drugs: Compare mechanisms of action (all drugs have different MOAs - help differentiate)
+  - For clinical exams: Compare techniques (e.g., pelvic exam technique vs rectal exam technique)
+  - For conditions: Compare diagnostic criteria, symptoms, treatments when similar
+  - For Physiology: FEV vs FVC, vs TLC, etc.
+- Create comparison charts for any category that appears across multiple topics/drugs/conditions
+- Goal: Help students differentiate between similar concepts with side-by-side comparisons
+- **REQUIRED for Drug Mechanism comparisons:** Add "Analogy" column/row with 2-4 sentence analogy explanation for EACH drug's mechanism to help students understand how it works (e.g., "Like cutting the assembly line belt"). Research good analogies using web search.
+
+
+#### Master Chart
+- Comprehensive table of ALL conditions/topics
+- Columns: Condition | Key Features | Additional columns
+- Organized by category or alphabetically
+- Color-coded rows for visual organization or to group drug classes, etc.
+- No page references needed
+
+#### High-Yield Summary
+- Color-coded boxes grouped by category:
+  - Anatomy Must-Knows
+  - Emergency/Critical Conditions
+  - Normal Variants
+  - Clinical Pearls
+  - Pain Characteristics
+  - Diagnostic Tests
+
+
+---
+
+## COLOR SCHEME - SOFT PASTELS
+
+### Table Header Colors (RGB)
+Use these for table headers (darker pastel):
+- **Purple**: `D1C4E9` (209, 196, 233) - Main/general topics
+- **Green**: `C8E6C9` (200, 230, 201) - Normal findings/anatomy
+- **Blue**: `B3E5FC` (179, 229, 252) - Diagnostic/exam techniques
+- **Teal**: `B2DFDB` (178, 223, 219) - Procedures
+- **Orange**: `FFE0B2` (255, 224, 178) - Special tests/signs
+- **Red**: `FFCDD2` (255, 205, 210) - Abnormal/pathology
+- **Pink**: `F8BBD0` (248, 187, 208) - Differential diagnosis
+- **Light Purple**: `EDE7F6` (237, 231, 246) - Master charts
+
+### Background Colors (Lighter Pastels)
+Use these for row backgrounds:
+- **Light Purple**: `F3E5F5`
+- **Light Green**: `E8F5E9`
+- **Light Blue**: `E1F5FE`
+- **Light Teal**: `E0F2F1`
+- **Light Orange**: `FFF3E0`
+- **Light Red**: `FFEBEE`
+- **Light Pink**: `FCE4EC`
+- **White**: `FFFFFF` - for data cells
+
+### Color-Coded Box Types
+1. **High-Yield Box** (Purple theme):
+   - Title color: RGB(118, 75, 162)
+   - Background: `F3E5F5`
+
+
+2. **Clinical Pearls & High-Yield Points** (Blue/Teal theme):
+   - Title color: RGB(0, 77, 64)
+   - Background: `E0F2F1`
+   - Includes both clinical reasoning AND high-yield exam points
+
+
+3. **Critical/Emergency** (Red theme):
+   - Title color: RGB(183, 28, 28)
+   - Background: `FFEBEE`
+
+
+4. **Memory Tricks** (Orange theme):
+   - Title color: RGB(230, 81, 0)
+   - Background: `FFF3E0`
+
+
+5. **Normal Variants** (Green theme):
+   - Title color: RGB(27, 94, 32)
+   - Background: `E8F5E9`
+
+6. FONT: CALIBRI size 12 for all text
+---
+
+## COMPARISON TABLE GUIDELINES
+
+### When to Create Comparison Tables
+Create comparison tables when there are **2 or more** similar:
+- Conditions with overlapping presentations
+- Drugs in the same class
+- Categories or classifications
+- Exam findings or techniques
+
+### Common Comparison Categories
+Choose relevant categories from:
+- **Age/Epidemiology**: Age groups, prevalence, demographics
+- **Risk Factors**: Predisposing factors, causes
+- **Presentation**: Symptoms, signs, appearance
+- **Location/Anatomy**: Anatomical positions, affected structures
+- **Diagnosis**: Diagnostic criteria, tests, findings
+- **Management**: Treatment approaches (only if in source)
+- **Complications**: Outcomes, risks
+- **Laboratory Values**: Test results, thresholds (only if in source)
+- **Prognosis**: Expected outcomes
+- **Key Distinguishing Features**: What sets them apart
+- Other categories as needed to answer learning objective.
+
+### Table Formatting
+- **Headers**: Bold white text on colored background
+- **Row labels** (first column): Bold text on light colored background
+- **Data cells**: Regular text on white background
+- Font: CALIBRI, size 12pt (11pt for dense tables)
+- Table style: 'Table Grid'
+
+---
+
+## MEMORY TRICKS & MNEMONICS
+
+**Use WebSearch to find established medical mnemonics and memory techniques**
+- Research proven mnemonics on medical education sites
+- Look for complete phrases/sentences (e.g., "Never Let Monkeys Eat Bananas" for WBC order)
+- Avoid simple acronyms that just list letters (e.g., "FWN")
+- Find visual associations and story-based memory devices
+- Include explanations of how the mnemonic works
+
+---
+
+## PYTHON-DOCX IMPLEMENTATION
+
+### Required Functions
+
+```python
+from docx import Document
+from docx.shared import Pt, RGBColor, Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
+
+def set_cell_background(cell, color):
+    """Set cell background color using hex color string"""
+    shading_elm = OxmlElement('w:shd')
+    shading_elm.set(qn('w:fill'), color)
+    cell._element.get_or_add_tcPr().append(shading_elm)
+
+def set_cell_text(cell, text, bold=False, color=None, size=11):
+    """Set cell text with formatting"""
+    cell.text = text
+    for paragraph in cell.paragraphs:
+        for run in paragraph.runs:
+            run.font.size = Pt(size)
+            run.font.name = 'Calibri'
+            run.bold = bold
+            if color:
+                run.font.color.rgb = RGBColor(*color)
+
+def add_colored_box(doc, title, content_list, title_color, bg_color='F3E5F5'):
+    """Add a colored information box"""
+    para = doc.add_paragraph()
+    para.paragraph_format.left_indent = Inches(0.3)
+    para.paragraph_format.space_before = Pt(6)
+    para.paragraph_format.space_after = Pt(6)
+
+    for item in content_list:
+        para.add_run(f'{item}\n').font.size = Pt(11)
+
+    return para
+```
+
+### Document Setup
+
+```python
+# Create document
+doc = Document()
+
+# Set margins
+sections = doc.sections
+for section in sections:
+    section.top_margin = Inches(0.8)
+    section.bottom_margin = Inches(0.8)
+    section.left_margin = Inches(0.8)
+    section.right_margin = Inches(0.8)
+
+# Title
+title = doc.add_heading('Study Guide Title', Lecture #)
+title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+title.runs[0].font.color.rgb = RGBColor(118, 75, 162)
+
+doc.add_page_break()
+```
+
+### Creating Comparison Table
+
+```python
+# Comparison table
+table = doc.add_table(rows=5, cols=3)
+table.style = 'Table Grid'
+
+# Headers
+headers = ['Feature', 'Hodgkin', 'Non-Hodgkin']
+for i, header_text in enumerate(headers):
+    set_cell_background(table.rows[0].cells[i], 'FFCDD2')  # Red for pathology
+    set_cell_text(table.rows[0].cells[i], header_text, bold=True, color=(183, 28, 28))
+
+# Data rows
+row_data = [
+    ['Frequency', '10%', '90%'],
+    ['Age', 'Bimodal (15-34, >60)', 'Older (>55)'],
+    ['Characteristic Cell', 'Reed-Sternberg cells', 'No RS cells'],
+    ['Spread Pattern', 'Contiguous', 'Non-contiguous']
+]
+
+for row_idx, row_content in enumerate(row_data, start=1):
+    cells = table.rows[row_idx].cells
+    # First column - feature (bold, colored)
+    set_cell_background(cells[0], 'FFEBEE')  # Light red
+    set_cell_text(cells[0], row_content[0], bold=True)
+    # Data columns (white background)
+    for col_idx in range(1, 3):
+        set_cell_background(cells[col_idx], 'FFFFFF')
+        set_cell_text(cells[col_idx], row_content[col_idx])
+```
+
+### Creating Colored Boxes
+
+```python
+# High-Yield Box
+add_colored_box(doc, 'High-Yield Facts:', [
+    'Fact 1 from source',
+    'Fact 2 from source',
+    'Fact 3 from source'
+], (118, 75, 162), 'F3E5F5')
+
+# Clinical Pearls & High-Yield Points Box
+add_colored_box(doc, 'Clinical Pearls & High-Yield Points:', [
+    'Clinical pearl using medical reasoning',
+    'High-yield point for boards',
+    'If X think Y association'
+], (0, 77, 64), 'E0F2F1')
+
+# Emergency/Critical Box
+add_colored_box(doc, 'CRITICAL - Never Miss:', [
+    'Red flag 1',
+    'Emergency sign 2',
+    'Urgent finding 3'
+], (183, 28, 28), 'FFEBEE')
+
+# Memory Tricks Box (MUST BE GOOD MNEMONICS)
+add_colored_box(doc, 'Memory Tricks & Mnemonics:', [
+    '"Be FWeaty" for B symptoms: Fever, Weight loss, SwEats, FAtigue, Temperature >100.4, You\'re sick!',
+    '"MDS = Marrow Doesn\'t Supply" (bone marrow failure)',
+    '"Never Let Monkeys Eat Bananas" (WBC order: Neutrophils, Lymphocytes, Monocytes, Eosinophils, Basophils)',
+    'NOT: "FWN" or "B = Bad" - these are BAD mnemonics!'
+], (230, 81, 0), 'FFF3E0')
+```
+
+### Heading Colors
+
+```python
+# Main section heading (Tab heading)
+heading1 = doc.add_heading('Learning Objectives', 1)
+heading1.runs[0].font.color.rgb = RGBColor(118, 75, 162)
+
+# Sub-heading
+heading2 = doc.add_heading('Learning Objective 1:', 2)
+heading2.runs[0].font.color.rgb = RGBColor(118, 75, 162)
+
+# Table heading
+doc.add_heading('Comparison Table Title', 3)
+```
+
+---
+
+## LEARNING OBJECTIVE TEMPLATE
+
+For each learning objective, follow this exact structure:
+
+```python
+# Learning Objective Header
+obj = doc.add_heading('Learning Objective #X:', 2)
+obj.runs[0].font.color.rgb = RGBColor(118, 75, 162)
+doc.add_paragraph('[Verbatim learning objective text from source]')
+
+# Summary - bullet outline answering the LO
+summary = doc.add_paragraph()
+summary.add_run('Summary:').bold = True
+doc.add_paragraph('• Key point 1 from source', style='List Bullet')
+doc.add_paragraph('• Key point 2 from source', style='List Bullet')
+doc.add_paragraph('• Key point 3 from source', style='List Bullet')
+
+doc.add_paragraph()
+
+# TABLE 1: Comparison table
+doc.add_heading('TABLE 1: Topic Comparison', 3)
+# [Create comparison table - see Python implementation section]
+
+doc.add_paragraph()
+
+# Additional tables as needed
+doc.add_heading('TABLE 2: [Additional Information]', 3)
+# [Create additional table as needed]
+
+doc.add_paragraph()
+
+# Clinical Pearls & High-Yield Points Box
+add_colored_box(doc, 'Clinical Pearls & High-Yield Points:', [
+    'MDS is a "preleukemic" state - think of it as bone marrow on the edge of becoming AML',
+    'If >20% blasts → it\'s AML, not MDS anymore',
+    'Pancytopenia in elderly patient → think MDS in differential'
+], (0, 77, 64), 'E0F2F1')
+
+doc.add_paragraph()
+
+# Memory Tricks/Mnemonics Box (researched via WebSearch)
+add_colored_box(doc, 'Memory Tricks & Mnemonics:', [
+    'Mnemonic 1 from research',
+    'Mnemonic 2 from research',
+    'Memory technique explanation'
+], (230, 81, 0), 'FFF3E0')
+
+doc.add_paragraph()
+
+# Analogy Box (researched analogy)
+add_colored_box(doc, 'Analogy:', [
+    'Think of MDS like a factory (bone marrow) with broken machinery. The workers (stem cells) are there, but the assembly line keeps producing defective products (dysplastic cells) and can\'t meet demand (cytopenias). Eventually, the whole factory might shut down and be replaced by cancer cells (transformation to AML).'
+], (118, 75, 162), 'F3E5F5')
+
+doc.add_page_break()  # After each learning objective
+```
+
+---
+
+## TAB 2: KEY COMPARISONS TEMPLATE
+
+```python
+heading = doc.add_heading('Key Comparisons', 1)
+heading.runs[0].font.color.rgb = RGBColor(118, 75, 162)
+
+# Comparison 1
+doc.add_heading('Condition A vs Condition B', 2)
+table = doc.add_table(rows=X, cols=3)
+table.style = 'Table Grid'
+
+headers = ['Feature', 'Condition A', 'Condition B']
+# [Format with red header colors for pathology comparisons]
+# [Include page references in cells]
+
+# Comparison 2
+# [Repeat for each major comparison]
+
+doc.add_page_break()
+```
+
+---
+
+## TAB 3: MASTER CHART TEMPLATE
+
+```python
+heading = doc.add_heading('Master Chart - [Topic]', 1)
+heading.runs[0].font.color.rgb = RGBColor(118, 75, 162)
+
+doc.add_heading('Comprehensive Condition/Topic Chart', 2)
+table = doc.add_table(rows=X, cols=2)
+table.style = 'Table Grid'
+
+headers = ['Condition/Topic', 'Key Features from Source']
+for i, header_text in enumerate(headers):
+    set_cell_background(table.rows[0].cells[i], '9575CD')  # Purple
+    set_cell_text(table.rows[0].cells[i], header_text, bold=True, color=(255, 255, 255))
+
+# Data rows
+master_data = [
+    ['Condition 1', 'Key feature description'],
+    ['Condition 2', 'Key feature description'],
+    ['Additional rows as needed'],
+    # [All conditions from learning objective/source]
+]
+
+for row_idx, row_content in enumerate(master_data, start=1):
+    cells = table.rows[row_idx].cells
+    set_cell_background(cells[0], 'EDE7F6')  # Light purple
+    set_cell_text(cells[0], row_content[0], bold=True)
+    set_cell_background(cells[1], 'FFFFFF')
+    set_cell_text(cells[1], row_content[1])
+
+doc.add_page_break()
+```
+
+---
+
+## TAB 4: HIGH-YIELD SUMMARY TEMPLATE
+
+```python
+heading = doc.add_heading('High-Yield Summary', 1)
+heading.runs[0].font.color.rgb = RGBColor(118, 75, 162)
+
+# Category 1: Anatomy
+add_colored_box(doc, 'ANATOMY - Must Know:', [
+    'Key anatomical fact 1',
+    'Key anatomical fact 2',
+    # [List all must-know anatomy from source]
+], (118, 75, 162), 'F3E5F5')
+
+doc.add_paragraph()
+
+# Category 2: Emergency/Critical
+add_colored_box(doc, 'EMERGENCIES - Never Miss:', [
+    'Emergency condition 1: Key features',
+    'Red flag 2: Critical finding',
+    # [All emergency/critical info from source]
+], (183, 28, 28), 'FFEBEE')
+
+doc.add_paragraph()
+
+# Category 3: Normal Variants
+add_colored_box(doc, 'NORMAL VARIANTS - Don\'t Confuse:', [
+    'Normal finding 1',
+    'Normal variant 2',
+], (27, 94, 32), 'E8F5E9')
+
+doc.add_paragraph()
+
+# Category 4: Clinical Pearls & High-Yield Points
+add_colored_box(doc, 'Clinical Pearls & High-Yield Points:', [
+    'Clinical pearl using medical reasoning',
+    'High-yield exam point',
+    'Practical clinical wisdom'
+], (0, 77, 64), 'E0F2F1')
+
+doc.add_paragraph()
+
+# Additional categories as appropriate for topic
+# Examples: Diagnostic Tests, Pain Characteristics, Lab Values, etc.
+
+# NOTE: Research good memory tricks/memory aids
+
+```
+
+---
+
+## FILE SAVING
+
+```python
+# Save document
+output_path = '/path/to/[Lecture # Topic].docx'
+doc.save(output_path)
+print(f"Study guide created: {output_path}")
+```
+
+---
+
+## QUALITY CHECKLIST
+
+Before finalizing the document, verify:
+
+### Content Requirements
+- [ ] **NO page references anywhere in document**
+- [ ] No external medical facts added (only mnemonics/analogies allowed, marked with * if critical)
+- [ ] Every learning objective has summary + tables + boxes + mnemonics
+- [ ] Summaries are bullet outlines answering the LO
+- [ ] All comparison tables have appropriate categories
+- [ ] Master chart includes all conditions/topics from source
+- [ ] High-yield summary organized by logical categories
+- [ ] Memory tricks and analogies researched using WebSearch (not invented)
+
+### Formatting Requirements
+- [ ] Soft pastel color scheme used consistently
+- [ ] All tables use 'Table Grid' style
+- [ ] Headers are bold with colored backgrounds
+- [ ] Row headers (first column) are bold
+- [ ] Data cells have white background
+- [ ] Headings use purple color (118, 75, 162)
+- [ ] Font is Calibri throughout
+- [ ] Margins set to 0.8 inches all sides
+
+### Structure Requirements
+- [ ] Title and (Lecture #) centered at beginning
+- [ ] 4 main sections (tabs) present
+- [ ] Page breaks after each learning objective
+- [ ] Page breaks between main sections
+- [ ] Consistent spacing (6pt before/after boxes)
+- [ ] Tables are properly sized and readable
+
+
+---
+
+## EXAMPLE USAGE
+
+Given a source file and learning objectives:
+
+```bash
+python3 create_study_guide.py
+```
+
+The script should:
+1. Read the source file
+2. Extract learning objectives
+3. Create comprehensive Word document with all 4 tabs
+4. Use ONLY source information for medical content
+5. Add memory tricks/mnemonics from external knowledge
+6. Apply soft pastel color scheme
+7. Save to appropriate directory
+
+---
+
+## COMMON PITFALLS TO AVOID
+
+### ❌ DON'T:
+- Add treatment details not in source (medications, dosages, protocols)
+- Add time windows not specified in source (e.g., "6 hour window")
+- Add disease classifications not in source (e.g., "primary" vs "secondary")
+- Add lab values not in source (e.g., "elevated PSA")
+- Add risk factors not detailed in source
+- Include pathophysiology beyond what's in source
+- Use harsh/bright colors instead of soft pastels
+- **Include page references anywhere** - NOT needed in this document
+- Omit memory tricks and mnemonics sections
+- Invent mnemonics/memory aids/analogies - MUST research using WebSearch
+- Create tables without proper color coding
+- **MISS CONDITIONS/ABNORMALITIES** - This is a critical error! Read entire source and include ALL conditions
+
+### ✅ DO:
+- **NO page references anywhere in document**
+- Use WebSearch to research memory tricks, mnemonics, memory aids, and analogies (MANDATORY)
+- Add clinical pearls related to source material
+- Use soft pastel colors consistently
+- Create comparison tables for ANY items that need differentiation (2+ items)
+- Put ALL comparison/differentiation content in tables (e.g., Innate vs Adaptive)
+- Include all 4 required tabs/sections
+- Format tables with colored headers and white data cells
+- Use clinical reasoning tips to aid learning
+- Include "If X think Y" associations
+- **READ ENTIRE SOURCE FILE** to identify ALL conditions, abnormalities, and findings
+- **CREATE COMPREHENSIVE TABLES** - Include EVERY condition mentioned needed to know from the learning objective
+- **Ask: "Do these need differentiation?"** - YES = table, NO = can be in summary
+
+---
+
+## TROUBLESHOOTING
+
+### Python-docx Common Errors
+
+**Error: `'Document' object has no attribute 'runs'`**
+```python
+# Wrong:
+doc.add_heading('Title', 1)
+doc.runs[-1].font.color.rgb = RGBColor(118, 75, 162)
+
+# Correct:
+heading = doc.add_heading('Title', 1)
+heading.runs[0].font.color.rgb = RGBColor(118, 75, 162)
+```
+
+**Error: Table alignment issues**
+- Always use `table.style = 'Table Grid'`
+- Set cell text AFTER setting background color
+- Use `set_cell_background()` before `set_cell_text()`
+
+---
+
+**End of Instructions**
+
+## Notes
+- This instruction file should be read by Claude at the start of any Word document creation task
+- Combine with source file to generate comprehensive study guides

@@ -1,0 +1,497 @@
+# EXCEL MASTER CHART TEMPLATE - CLAUDE INSTRUCTIONS
+
+## PURPOSE
+Create a single-sheet Excel Master Chart that lists ALL drugs/medications from a source file in a comprehensive, searchable table format. This is a quick-reference chart for exam review.
+
+---
+
+## SECTION 1: FILE STRUCTURE
+
+### Single Sheet Structure:
+- **Sheet Name:** "Master Chart"
+- Frozen header row (row 1)
+- Color-coded rows by drug class
+
+---
+
+## SECTION 2: COLUMN STRUCTURE
+
+### FLEXIBLE COLUMNS - User Defines Categories
+
+Include the following columns:
+
+**For Drug Charts:**
+- Drug Class, Drug Name (Brand), Route, Mechanism, Uses, Adverse Effects, Contraindications, Resistance, Drug Interactions, Drug Combinations, Special Considerations
+
+**For Condition Charts:**
+- Condition, Epidemiology, Risk Factors, Clinical Presentation, Diagnostics, Labs, Treatment
+
+**For Lab Value Charts:**
+- Test Name, Normal Range, Increased In, Decreased In, Clinical Significance
+
+The user will specify which columns/categories to include or modify if needed.
+
+### Column Width Guidelines:
+- Short text columns (Route, Status): 12-15 width
+- Medium text columns (Drug Class, Condition): 20-25 width
+- Long text columns (Mechanism, Uses, Clinical Features): 30-40 width
+- Name columns (Drug Name, Condition Name): 25-30 width
+
+### IMPORTANT:
+- Wait for user to specify which columns to create or ask if user does not.
+- User will provide the category headers
+- Adjust column widths based on expected content length
+- First column is typically the grouping/class column (bold text)
+
+---
+
+## SECTION 3: COLOR SCHEME
+
+### Header Row (Row 1):
+```
+Background: #4472C4 (Dark blue)
+Font: White, Bold, Size 12
+Alignment: Center, vertical center, wrap text
+Row height: 25
+```
+
+### Drug Class Row Colors (rotate through these for each drug class):
+
+```python
+# Color Set 0: Ice Blue 40% (Accent 1)
+ICE_BLUE_MAIN = 'D9E2F3'
+
+# Color Set 1: Seafoam
+SEAFOAM_MAIN = 'C8E6C9'
+
+# Color Set 2: Light Orchid
+LIGHT_ORCHID_MAIN = 'D1C4E9'
+
+# Color Set 3: Champagne
+CHAMPAGNE_MAIN = 'F7E7CE'
+
+# Color Set 4: Sky Blue 60%
+SKY_BLUE_MAIN = 'BDD7EE'
+
+# Color Set 5: Pale Azure
+PALE_AZURE_MAIN = 'F0F8FF'
+
+# Color Set 6: Blush Pink
+BLUSH_PINK_MAIN = 'FCE4EC'
+
+# Color Set 7: Soft Lilac
+SOFT_LILAC_MAIN = 'EDE7F6'
+
+# Color Set 8: Soft Tangerine
+SOFT_TANGERINE_MAIN = 'FFE8D6'
+
+# Color Set 9: Powder Blue
+POWDER_BLUE_MAIN = 'BBDEFB'
+```
+
+### Color Assignment:
+- Assign ONE color per drug class
+- All drugs in the same class get the same row color
+- Rotate through colors in order (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, then repeat)
+- Example:
+  - NRTIs → Ice Blue (#D9E2F3)
+  - NNRTIs → Seafoam (#C8E6C9)
+  - Integrase Inhibitors → Light Orchid (#D1C4E9)
+  - Protease Inhibitors → Champagne (#F7E7CE)
+  - etc.
+
+---
+
+## SECTION 4: TEXT FORMATTING
+
+### Header Row (Row 1):
+- Font: Calibri, Bold, Size 12, White color
+- Background: #4472C4 (dark blue)
+- Alignment: Center horizontal, center vertical
+- Word wrap: Enabled
+- Row height: 25
+
+### Data Rows (Row 2+):
+- Font: Calibri, Size 10, Black color (#000000)
+- Column A (Drug Class): Bold
+- Columns B-J: Regular weight
+- Alignment: Left horizontal, top vertical
+- Word wrap: Enabled
+- Row height: Auto-expand based on content (minimum 20)
+
+### Borders:
+- White borders (#FFFFFF) - invisible, blends with pastel backgrounds
+- All cells have thin borders on all sides
+
+---
+
+## SECTION 5: EMOJIS AND INDICATORS
+
+Use these standardized emojis:
+
+```
+🟢 = First-line/Preferred agent
+⚠️ = Warning/Serious adverse effect
+❗️ = Critical information (screen before use, etc.)
+✅ = Safe/Positive (e.g., safe in pregnancy)
+🚫 = Absolute contraindication
+```
+
+### Examples:
+- Uses column: "🟢 HIV - First line for naïve patients"
+- Adverse Effects: "⚠️ Lactic acidosis, hepatotoxicity"
+- Special Considerations: "❗️ Screen HLA-B*5701 BEFORE use"
+- Special Considerations: "✅ Safe in pregnancy"
+
+---
+
+## SECTION 6: CONTENT GUIDELINES
+
+### Drug Class (Column A):
+- Use abbreviated class names for space
+- Examples: NRTI, NNRTI, Integrase Inhibitor, Protease Inhibitor, Beta-blocker, ACE Inhibitor
+
+### CONTENT GUIDELINES
+
+Since columns are user-defined, here are example guidelines for common column types:
+
+**Drug/Medication Columns:**
+- Drug Name: "Generic Name (Brand Name)" - e.g., "Tenofovir (Viread)"
+- Route: Keep brief - Oral, IV, IM, SC, Topical, etc.
+- Mechanism: Brief, use arrows (→) for cause/effect
+- Uses: Mark first-line drugs with 🟢, list main indications
+- Adverse Effects: Mark serious with ⚠️, list important side effects
+- Contraindications: "None" or list specific ones (Example: Pregnancy, etc.)
+- Toxicity: Specific toxic effects, antidotes, monitoring
+- Resistance: Patterns if applicable, "N/A" if not
+- Drug Interactions
+- Special Considerations: Monitoring
+
+**Condition/Disease Columns:**
+- Condition Name: Full medical term
+- Epidemiology: List incidence, prevalence, demographics
+- Risk Factors: List key risk factors
+- Clinical Presentation: List signs and symptoms (Hallmark finding/Key difference/what makes it unique in bold)
+- Diagnosis: Diagnostic criteria, Diagnostic Test/Labs
+- Treatment: First-line (🟢), alternatives
+- Prognosis: Expected outcomes
+
+**Laboratory/Test Columns:**
+- Test Name: Standard abbreviation and full name
+- Normal Range: Include units
+- Increased In: Conditions causing elevation
+- Decreased In: Conditions causing decrease
+- Clinical Significance: When to order, what it means
+
+**User-Specified Columns:**
+- Follow source file information exactly
+- Use emojis consistently (🟢 ⚠️ ❗️ ✅)
+- Keep content concise but complete
+- Mark external info with * if added
+
+---
+
+## SECTION 7: PYTHON TEMPLATE CODE
+
+```python
+#!/usr/bin/env python3
+"""
+Generate Excel Master Chart from source file
+FLEXIBLE: User specifies columns/categories
+"""
+
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+
+# Color scheme
+MAIN_TITLE_COLOR = '4472C4'
+
+# Row colors (rotate through these for grouping)
+COLOR_SETS = [
+    'D9E2F3',  # Ice Blue
+    'C8E6C9',  # Seafoam
+    'D1C4E9',  # Light Orchid
+    'F7E7CE',  # Champagne
+    'BDD7EE',  # Sky Blue
+    'F0F8FF',  # Pale Azure
+    'FCE4EC',  # Blush Pink
+    'EDE7F6',  # Soft Lilac
+    'FFE8D6',  # Soft Tangerine
+    'BBDEFB',  # Powder Blue
+]
+
+# White border (invisible)
+thin_border = Border(
+    left=Side(style='thin', color='FFFFFF'),
+    right=Side(style='thin', color='FFFFFF'),
+    top=Side(style='thin', color='FFFFFF'),
+    bottom=Side(style='thin', color='FFFFFF')
+)
+
+def create_master_chart(headers, column_widths):
+    """
+    Create Master Chart with user-specified columns
+
+    Args:
+        headers: List of column header names (user-defined)
+        column_widths: Dict mapping column letters to widths
+    """
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Master Chart"
+
+    # Set column widths
+    for col, width in column_widths.items():
+        ws.column_dimensions[col].width = width
+
+    # Header row - FLEXIBLE based on user input
+    for col_idx, header in enumerate(headers, start=1):
+        cell = ws.cell(1, col_idx, header)
+        cell.font = Font(bold=True, size=12, color='FFFFFF')
+        cell.fill = PatternFill(start_color=MAIN_TITLE_COLOR, end_color=MAIN_TITLE_COLOR, fill_type='solid')
+        cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        cell.border = thin_border
+
+    ws.row_dimensions[1].height = 25
+    ws.freeze_panes = 'A2'
+
+    return wb
+
+def add_data_row(ws, row_num, data_values, color):
+    """
+    Add a single row to Master Chart
+
+    Args:
+        ws: worksheet object
+        row_num: row number
+        data_values: List of values for each column (matches header count)
+        color: pastel background color for this row
+    """
+    for col_idx, value in enumerate(data_values, start=1):
+        cell = ws.cell(row_num, col_idx, value)
+        cell.alignment = Alignment(wrap_text=True, vertical='top')
+        cell.border = thin_border
+        cell.font = Font(size=10, color='000000')
+        # First column is bold (grouping column)
+        if col_idx == 1:
+            cell.font = Font(bold=True, size=10, color='000000')
+        # Apply background color
+        cell.fill = PatternFill(start_color=color, end_color=color, fill_type='solid')
+
+def save_workbook(wb, output_path):
+    """Save the workbook"""
+    wb.save(output_path)
+    print(f'✅ Master Chart saved: {output_path}')
+
+# EXAMPLE USAGE:
+if __name__ == '__main__':
+    # User specifies headers (columns)
+    headers = ['Drug Class', 'Drug Name', 'Mechanism', 'Uses', 'Toxicity', 'Antidote']
+
+    # Set column widths based on content type
+    column_widths = {
+        'A': 20,  # Drug Class
+        'B': 25,  # Drug Name
+        'C': 35,  # Mechanism
+        'D': 35,  # Uses
+        'E': 35,  # Toxicity
+        'F': 30,  # Antidote
+    }
+
+    wb = create_master_chart(headers, column_widths)
+    ws = wb.active
+
+    # Add rows - data_values must match number of headers
+    # add_data_row(ws, 2, ['NRTI', 'Tenofovir', 'Inhibits RT', 'HIV', 'Nephrotoxicity', 'Supportive'], 'D9E2F3')
+
+    save_workbook(wb, 'Master_Chart.xlsx')
+```
+
+---
+
+## SECTION 8: CREATION WORKFLOW
+
+### Step 1: Get User Requirements
+- Ask user OR wait for user to specify:
+  - What columns/categories to include
+  - What type of items to track (drugs, conditions, lab values, etc.)
+  - Any specific grouping requirements
+
+### Step 2: Read Source File
+- Read the entire source file
+- Identify ALL items mentioned (drugs, conditions, etc.)
+- Group items by their class/category (first column)
+
+### Step 3: Organize Groups/Classes
+- List all groups/classes found
+- Assign color to each group (rotate through COLOR_SETS)
+- Order groups logically (as presented in source or as requested)
+
+### Step 4: Extract Information
+For EACH item, extract from source ONLY the columns user specified:
+- Group/Class (first column - always included)
+- Additional columns as specified by user
+- Examples: Drug Name, Mechanism, Uses, Toxicity, Antidote, etc.
+- Mark important info with appropriate emojis:
+  - 🟢 for first-line/preferred
+  - ⚠️ for serious effects/warnings
+  - ❗️ for critical information
+  - ✅ for positive notes
+
+### Step 5: Create Excel File
+- Set up workbook with single "Master Chart" sheet
+- Create header row with user-specified columns
+- Dark blue background (#4472C4) for header
+- Add each item as a row with appropriate group color
+- Apply all formatting (fonts, alignment, borders)
+
+### Step 6: Verify
+- All items from source are included
+- Information matches source exactly
+- Colors are consistent within groups
+- Emojis are used appropriately
+- No external information added (except marked with *)
+
+---
+
+## SECTION 9: VERIFICATION CHECKLIST
+
+Before finalizing the Master Chart, verify:
+
+✅ **Completeness:**
+- [ ] ALL items from source file included (drugs, conditions, etc.). Or if user states specific ones (For example: If user provides specific drug names, but source file has a drug name that the user did not provide or say, use what user provided.
+- [ ] No items missed
+- [ ] All user-specified columns filled for each item
+
+✅ **Accuracy:**
+- [ ] All information comes from source only
+- [ ] Names spelled correctly (match source exactly)
+- [ ] All details match source descriptions
+- [ ] No external knowledge added (unless marked with *)
+
+✅ **Formatting:**
+- [ ] Header row: Dark blue (#4472C4), white bold text, size 12
+- [ ] Header row frozen (freeze panes at A2)
+- [ ] Data rows: Size 10, black text
+- [ ] First column (grouping) is bold
+- [ ] All cells have white borders (#FFFFFF)
+- [ ] Word wrap enabled
+- [ ] Row heights auto-expand for content
+- [ ] Column widths appropriate for content type
+
+✅ **Color Coding:**
+- [ ] Each group/class has ONE consistent color
+- [ ] Colors rotate through the 10-color palette
+- [ ] All items in same group have same row color
+
+✅ **Emojis:**
+- [ ] 🟢 used for first-line/preferred
+- [ ] ⚠️ used for serious effects/warnings
+- [ ] ❗️ used for critical information
+- [ ] ✅ used for positive notes
+- [ ] No extra emojis added beyond those specified
+
+---
+
+## SECTION 10: COMMON MISTAKES TO AVOID
+
+**DO NOT:**
+- Add items not mentioned in source
+- Guess information not provided
+- Add external knowledge without * marker
+- Use different colors for same group/class
+- Skip any user-specified columns
+- Use different font sizes than specified (header=12, data=10)
+- Forget to freeze header row
+- Use gray borders instead of white (#FFFFFF)
+- Create columns user didn't ask for
+
+
+**DO:**
+- For medical condition charts, include every condition listed in the learning objectives of the source file.
+- For drug charts, include every drug listed in the source file unless user provides a specific list of drugs then follow the list that the user provides.
+- Use exact spelling from source
+- Mark important info with appropriate emojis
+- Keep information concise but complete
+- Use consistent color per group/class
+- Apply word wrap to all cells
+- For drug charts, ask the user what columns to include.
+- Ask for clarification requirements unclear. Ask if there are questions. 
+
+---
+
+## SECTION 11: FILE NAMING AND SAVING
+
+### File Name Format:
+```
+[Topic]_Master_Chart.xlsx
+```
+
+Examples:
+- HIV_Drugs_Master_Chart.xlsx
+- Cardiac_Medications_Master_Chart.xlsx
+- Antimicrobials_Master_Chart.xlsx
+
+### Save Location:
+Save to the appropriate "Claude Study Tools" folder within the class/exam directory structure.
+
+---
+
+## SECTION 12: EXAMPLE OUTPUTS
+
+### Example 1: Drug Chart with Toxicity Focus (User-Specified)
+
+Master Chart Columns:
+
+| Column | Header | Content |
+|--------|--------|-------|---------|
+| A | Drug Class | Drug class name (e.g., NRTI, NNRTI, Beta-blocker) |
+| B | Drug Name (Brand) | Generic name + brand name in parentheses |
+| C | Route | Administration route (Oral, IV, IM, etc.) |
+| D | Mechanism | Brief mechanism of action |
+| E | Uses | Clinical indications with 🟢 for first-line/drug of choice |
+| F | Adverse Effects | Side effects with ⚠️ for serious ones |
+| G | Contraindications | When NOT to use |
+| H | Resistance | Resistance patterns (if applicable) |
+| I | Drug Interactions | Major drug interactions |
+| J | Special Considerations | Important clinical notes |
+
+
+### Example: Standard Drug Chart
+
+| Drug Class | Drug Name (Brand) | Route | Mechanism | Uses | Adverse Effects | Contraindications |
+|------------|-------------------|-------|-----------|------|-----------------|-------------------|
+| NRTI | Tenofovir (Viread) | Oral | Nucleoside analogue → inhibits RT | 🟢 HIV - First line | ⚠️ Lactic acidosis | Severe renal impairment |
+| NNRTI | Rilpivirine (Edurant) | Oral | Binds allosteric site on RT | HIV (with NRTIs) | Rash, insomnia | None absolute |
+
+### Example: Condition Chart
+
+| Condition | Epidemiology | Risk Factors | Clinical Presentation | Treatment |
+|-----------|--------------|--------------|----------------------|-----------|
+| Type 2 DM | Most common form | Obesity, family history | Polyuria, polydipsia | 🟢 Metformin first-line |
+| Hypertension | 1 in 3 adults | Age, salt intake, obesity | Often asymptomatic | 🟢 ACE inhibitors/ARBs |
+
+---
+
+## SECTION 13: CRITICAL REMINDERS
+
+1. **For drug charts, Ask USER COLUMNS:** Do NOT assume which columns to create. Ask user to specify the categories/columns they want (e.g., "include Drug Class, Drug Name, Mechanism, Uses, Toxicity, Antidote").
+
+2. **Source-Only Policy:** Only use information from the provided source file. No external medical knowledge unless absolutely critical and marked with *.
+
+3. **Complete Coverage:** Every single item mentioned in the source or if the user provided a list MUST appear in the Master Chart. No exceptions.
+
+4. **Consistent Colors:** Once a group/class is assigned a color, ALL items in that group must use that same color.
+
+5. **Frozen Header:** Always freeze the header row so it stays visible when scrolling.
+
+6. **Emoji Usage:** Use emojis sparingly and only as specified (🟢, ⚠️, ❗️, ✅, 🚫).
+
+7. **Verification:** After creating the chart, go back through the source file to ensure no items were missed.
+
+8. **Ask if Unclear:** If user doesn't specify columns, ask: "What columns/categories would you like me to include in the Master Chart?"
+
+---
+
+**End of Instructions**

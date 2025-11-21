@@ -1,0 +1,122 @@
+{
+  "preset": "Drug Chart (11 columns)",
+  "columns": [
+    "Drug Class",
+    "Drug Name (Brand)",
+    "Route",
+    "Mechanism",
+    "Uses",
+    "Adverse Effects",
+    "Contraindications",
+    "Resistance",
+    "Drug Interactions",
+    "Drug Combinations",
+    "Special Considerations"
+  ],
+  "rows": [
+    [
+      "Beta Blockers",
+      "Metoprolol (Lopressor)",
+      "Oral/IV",
+      "Selective beta-1 receptor antagonist",
+      "Hypertension, heart failure, angina, post-MI",
+      "Bradycardia, fatigue, bronchospasm, mask hypoglycemia",
+      "2nd/3rd degree AV block, severe bradycardia, acute decompensated HF",
+      "N/A",
+      "Verapamil/diltiazem (increased bradycardia), insulin (masks hypoglycemia)",
+      "Often combined with ACE inhibitors or diuretics",
+      "Don't abruptly discontinue; taper over 1-2 weeks"
+    ],
+    [
+      "Beta Blockers",
+      "Carvedilol (Coreg)",
+      "Oral",
+      "Non-selective beta blocker with alpha-1 blocking activity",
+      "Heart failure, hypertension, post-MI LV dysfunction",
+      "Dizziness, hypotension, bradycardia, weight gain",
+      "Decompensated heart failure, severe bradycardia, liver dysfunction",
+      "N/A",
+      "Digoxin (increased bradycardia), rifampin (decreased levels)",
+      "First-line in systolic heart failure with ACE inhibitor",
+      "Take with food to slow absorption and reduce orthostatic hypotension"
+    ],
+    [
+      "ACE Inhibitors",
+      "Lisinopril (Prinivil, Zestril)",
+      "Oral",
+      "Inhibits ACE, preventing conversion of angiotensin I to II",
+      "Hypertension, heart failure, post-MI, diabetic nephropathy",
+      "Dry cough, hyperkalemia, angioedema, hypotension, renal dysfunction",
+      "Pregnancy, bilateral renal artery stenosis, history of angioedema",
+      "N/A",
+      "NSAIDs (reduced efficacy), K-sparing diuretics (hyperkalemia)",
+      "Often combined with beta blockers or diuretics",
+      "Monitor K+ and creatinine within 1-2 weeks of initiation"
+    ],
+    [
+      "ACE Inhibitors",
+      "Enalapril (Vasotec)",
+      "Oral/IV",
+      "Inhibits ACE, reduces aldosterone secretion",
+      "Hypertension, heart failure, asymptomatic LV dysfunction",
+      "Dry cough (10-15%), dizziness, hyperkalemia, taste changes",
+      "Pregnancy (Category D), bilateral renal stenosis",
+      "N/A",
+      "Lithium (increased levels), allopurinol (increased hypersensitivity risk)",
+      "May be used with ARBs in select heart failure cases",
+      "Prodrug - converted to enalaprilat (active form) in liver"
+    ],
+    [
+      "Statins",
+      "Atorvastatin (Lipitor)",
+      "Oral",
+      "HMG-CoA reductase inhibitor",
+      "Hyperlipidemia, CVD prevention, post-ACS",
+      "Myalgias, increased LFTs, rhabdomyolysis (rare), memory issues",
+      "Active liver disease, pregnancy/nursing, concomitant strong CYP3A4 inhibitors",
+      "N/A",
+      "Grapefruit juice (increased levels), fibrates (increased rhabdomyolysis risk)",
+      "High-intensity statin - often used in ACS and stroke prevention",
+      "Can be taken any time of day (long half-life)"
+    ],
+    [
+      "Statins",
+      "Rosuvastatin (Crestor)",
+      "Oral",
+      "HMG-CoA reductase inhibitor (most potent)",
+      "Hyperlipidemia, primary prevention in high-risk patients",
+      "Myopathy, headache, GI upset, proteinuria",
+      "Active liver disease, pregnancy, severe renal impairment",
+      "N/A",
+      "Antacids (decreased absorption), cyclosporine (increased levels)",
+      "Most potent LDL reduction; dose adjust in Asian patients",
+      "Take at bedtime for optimal cholesterol synthesis inhibition"
+    ],
+    [
+      "Diuretics (Loop)",
+      "Furosemide (Lasix)",
+      "Oral/IV",
+      "Inhibits Na-K-2Cl cotransporter in thick ascending limb of loop of Henle",
+      "Edema (HF, cirrhosis, renal), acute pulmonary edema, hypertension",
+      "Hypokalemia, hypomagnesemia, ototoxicity, hyperuricemia, photosensitivity",
+      "Anuria, severe electrolyte depletion, sulfa allergy",
+      "N/A",
+      "Aminoglycosides (increased ototoxicity), NSAIDs (reduced efficacy)",
+      "Often combined with K-sparing diuretics to prevent hypokalemia",
+      "IV preferred in acute HF; oral absorption variable (bioavailability 10-90%)"
+    ],
+    [
+      "Diuretics (Loop)",
+      "Bumetanide (Bumex)",
+      "Oral/IV",
+      "Inhibits Na-K-2Cl cotransporter; 40x more potent than furosemide",
+      "Edema, heart failure, renal failure",
+      "Hypokalemia, hypotension, hyperuricemia, muscle cramps",
+      "Anuria, severe electrolyte abnormalities, hepatic coma",
+      "N/A",
+      "Lithium (increased levels), digoxin (hypokalemia increases toxicity)",
+      "Alternative to furosemide in diuretic resistance",
+      "More predictable oral absorption than furosemide (80-100%)"
+    ]
+  ]
+}

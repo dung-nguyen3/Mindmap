@@ -1,0 +1,68 @@
+{
+  "preset": "Condition Chart (7 columns)",
+  "columns": [
+    "Condition",
+    "Epidemiology",
+    "Risk Factors",
+    "Clinical Presentation",
+    "Diagnostics",
+    "Labs",
+    "Treatment"
+  ],
+  "rows": [
+    [
+      "Type 2 Diabetes Mellitus",
+      "10% of US adults; higher in Hispanic, Black, Native American populations",
+      "Obesity (BMI >30), sedentary lifestyle, family history, age >45, PCOS, gestational diabetes",
+      "Often asymptomatic early; polyuria, polydipsia, polyphagia, weight loss, blurred vision, slow wound healing",
+      "Fasting glucose ≥126 mg/dL (x2), HbA1c ≥6.5%, OGTT 2-hr glucose ≥200 mg/dL, random glucose ≥200 + symptoms",
+      "Elevated glucose, HbA1c, lipid panel, microalbuminuria, CMP for renal function",
+      "Lifestyle modification (diet, exercise), metformin first-line, add SGLT2i/GLP-1 if CVD/CKD, insulin if needed"
+    ],
+    [
+      "Hypertension (Essential)",
+      "Nearly 50% of US adults; increases with age",
+      "Age, obesity, high sodium diet, alcohol use, smoking, stress, family history, Black race",
+      "Usually asymptomatic (silent killer); severe: headache, dizziness, vision changes, chest pain",
+      "BP ≥130/80 on 2+ occasions; 24-hr ambulatory BP monitoring if white coat suspected",
+      "BMP (K+ baseline), urinalysis (proteinuria), lipid panel, ECG (LVH)",
+      "Lifestyle: DASH diet, weight loss, exercise, limit alcohol; Meds: ACEi/ARB, CCB, thiazide diuretic"
+    ],
+    [
+      "Hyperlipidemia",
+      "~40% of adults have elevated LDL; major CVD risk factor",
+      "Diet high in saturated fat, obesity, sedentary lifestyle, diabetes, hypothyroidism, family history",
+      "Asymptomatic; may present with xanthomas, corneal arcus if severe familial hyperlipidemia",
+      "Lipid panel: Total cholesterol, LDL, HDL, triglycerides; calculate ASCVD risk score",
+      "Lipid panel (fasting preferred for TG accuracy), TSH, HbA1c, LFTs before statin",
+      "High-intensity statin if LDL ≥190 or ASCVD risk ≥20%; moderate-intensity if 10-year risk 7.5-20%"
+    ],
+    [
+      "Heart Failure (Systolic/HFrEF)",
+      "6+ million US adults; leading cause of hospitalization in elderly",
+      "CAD, MI, HTN, valvular disease, cardiomyopathy, diabetes, obesity, alcohol abuse",
+      "Dyspnea (exertional → rest), orthopnea, PND, peripheral edema, fatigue, JVD, S3 gallop, pulmonary rales",
+      "Echocardiogram (EF <40%), BNP/NT-proBNP, CXR (pulmonary edema, cardiomegaly), ECG",
+      "Elevated BNP (>100)/NT-proBNP (>300), BMP (renal function, K+), troponin if ACS suspected",
+      "ACEi/ARB + beta blocker + MRA; SGLT2i; diuretics for volume; consider ARNI, ivabradine, hydralazine-nitrate"
+    ],
+    [
+      "Chronic Kidney Disease (CKD)",
+      "15% of US adults; higher in elderly, diabetics, hypertensive patients",
+      "Diabetes (leading cause), hypertension, glomerulonephritis, PKD, chronic obstruction, NSAIDs",
+      "Often asymptomatic until advanced; fatigue, nausea, decreased urine output, edema, uremia symptoms in ESRD",
+      "eGFR <60 for >3 months, albuminuria (ACR >30 mg/g), renal ultrasound, biopsy if unclear etiology",
+      "Elevated Cr, decreased eGFR, elevated BUN, hyperkalemia, metabolic acidosis, anemia, hyperphosphatemia",
+      "Control BP/DM, ACEi/ARB, SGLT2i, dietary restriction (protein, K+, PO4), erythropoietin, dialysis/transplant if ESRD"
+    ],
+    [
+      "COPD (Chronic Obstructive Pulmonary Disease)",
+      "16+ million diagnosed in US; 3rd leading cause of death",
+      "Smoking (#1 cause - 85-90%), occupational exposures (coal, silica), alpha-1 antitrypsin deficiency",
+      "Chronic cough, sputum production, progressive dyspnea, wheezing, barrel chest, decreased breath sounds",
+      "Spirometry: FEV1/FVC <0.70 post-bronchodilator; CXR (hyperinflation, flattened diaphragm), CT if bullae/emphysema",
+      "Spirometry (obstructive pattern), CBC (polycythemia), ABG (hypoxemia, hypercapnia in severe)",
+      "Smoking cessation, bronchodilators (SABA/LABA, anticholinergics), ICS if frequent exacerbations, O2 if hypoxemic, pulmonary rehab"
+    ]
+  ]
+}

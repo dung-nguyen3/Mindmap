@@ -1,0 +1,245 @@
+{
+  "root_id": "root",
+  "layout": "tree_right",
+  "line_style": "curved",
+  "nodes": {
+    "root": {
+      "text": "Pharmacology",
+      "parent_id": null,
+      "x": 0,
+      "y": 0,
+      "direction": "auto",
+      "collapsed": false,
+      "style": {
+        "shape": "ellipse",
+        "fill_color": "#4472C4",
+        "border_color": "#2E5090",
+        "border_width": 2,
+        "text_color": "#FFFFFF",
+        "font_family": "Calibri",
+        "font_size": 14,
+        "font_bold": true,
+        "line_color": "#666666",
+        "line_width": 2,
+        "line_style": "curved"
+      },
+      "extra_data": {}
+    },
+    "beta_blockers": {
+      "text": "Beta Blockers",
+      "parent_id": "root",
+      "x": 180,
+      "y": -120,
+      "direction": "auto",
+      "collapsed": false,
+      "style": {
+        "shape": "rounded_rectangle",
+        "fill_color": "#B3D4ED",
+        "border_color": "#B3D4ED",
+        "border_width": 2,
+        "text_color": "#000000",
+        "font_family": "Calibri",
+        "font_size": 12,
+        "font_bold": true,
+        "line_color": "#666666",
+        "line_width": 2,
+        "line_style": "curved"
+      },
+      "extra_data": {}
+    },
+    "metoprolol": {
+      "text": "Metoprolol",
+      "parent_id": "beta_blockers",
+      "x": 360,
+      "y": -150,
+      "direction": "auto",
+      "collapsed": false,
+      "style": {
+        "shape": "rounded_rectangle",
+        "fill_color": "#E3F2FD",
+        "border_color": "#B3D4ED",
+        "border_width": 2,
+        "text_color": "#000000",
+        "font_family": "Calibri",
+        "font_size": 11,
+        "font_bold": false,
+        "line_color": "#666666",
+        "line_width": 2,
+        "line_style": "curved"
+      },
+      "extra_data": {
+        "Route": "Oral",
+        "Mechanism": "Selective β1 blocker"
+      }
+    },
+    "carvedilol": {
+      "text": "Carvedilol",
+      "parent_id": "beta_blockers",
+      "x": 360,
+      "y": -90,
+      "direction": "auto",
+      "collapsed": false,
+      "style": {
+        "shape": "rounded_rectangle",
+        "fill_color": "#E3F2FD",
+        "border_color": "#B3D4ED",
+        "border_width": 2,
+        "text_color": "#000000",
+        "font_family": "Calibri",
+        "font_size": 11,
+        "font_bold": false,
+        "line_color": "#666666",
+        "line_width": 2,
+        "line_style": "curved"
+      },
+      "extra_data": {
+        "Route": "Oral",
+        "Mechanism": "Non-selective β blocker + α1 blocker"
+      }
+    },
+    "ace_inhibitors": {
+      "text": "ACE Inhibitors",
+      "parent_id": "root",
+      "x": 180,
+      "y": 0,
+      "direction": "auto",
+      "collapsed": false,
+      "style": {
+        "shape": "rounded_rectangle",
+        "fill_color": "#A8CCA8",
+        "border_color": "#A8CCA8",
+        "border_width": 2,
+        "text_color": "#000000",
+        "font_family": "Calibri",
+        "font_size": 12,
+        "font_bold": true,
+        "line_color": "#666666",
+        "line_width": 2,
+        "line_style": "curved"
+      },
+      "extra_data": {}
+    },
+    "lisinopril": {
+      "text": "Lisinopril",
+      "parent_id": "ace_inhibitors",
+      "x": 360,
+      "y": -30,
+      "direction": "auto",
+      "collapsed": false,
+      "style": {
+        "shape": "rounded_rectangle",
+        "fill_color": "#C8E6C9",
+        "border_color": "#A8CCA8",
+        "border_width": 2,
+        "text_color": "#000000",
+        "font_family": "Calibri",
+        "font_size": 11,
+        "font_bold": false,
+        "line_color": "#666666",
+        "line_width": 2,
+        "line_style": "curved"
+      },
+      "extra_data": {
+        "Route": "Oral",
+        "Mechanism": "ACE inhibitor"
+      }
+    },
+    "enalapril": {
+      "text": "Enalapril",
+      "parent_id": "ace_inhibitors",
+      "x": 360,
+      "y": 30,
+      "direction": "auto",
+      "collapsed": false,
+      "style": {
+        "shape": "rounded_rectangle",
+        "fill_color": "#C8E6C9",
+        "border_color": "#A8CCA8",
+        "border_width": 2,
+        "text_color": "#000000",
+        "font_family": "Calibri",
+        "font_size": 11,
+        "font_bold": false,
+        "line_color": "#666666",
+        "line_width": 2,
+        "line_style": "curved"
+      },
+      "extra_data": {
+        "Route": "Oral/IV",
+        "Mechanism": "ACE inhibitor (prodrug)"
+      }
+    },
+    "statins": {
+      "text": "Statins",
+      "parent_id": "root",
+      "x": 180,
+      "y": 120,
+      "direction": "auto",
+      "collapsed": false,
+      "style": {
+        "shape": "rounded_rectangle",
+        "fill_color": "#B8A4D0",
+        "border_color": "#B8A4D0",
+        "border_width": 2,
+        "text_color": "#000000",
+        "font_family": "Calibri",
+        "font_size": 12,
+        "font_bold": true,
+        "line_color": "#666666",
+        "line_width": 2,
+        "line_style": "curved"
+      },
+      "extra_data": {}
+    },
+    "atorvastatin": {
+      "text": "Atorvastatin",
+      "parent_id": "statins",
+      "x": 360,
+      "y": 90,
+      "direction": "auto",
+      "collapsed": false,
+      "style": {
+        "shape": "rounded_rectangle",
+        "fill_color": "#D1C4E9",
+        "border_color": "#B8A4D0",
+        "border_width": 2,
+        "text_color": "#000000",
+        "font_family": "Calibri",
+        "font_size": 11,
+        "font_bold": false,
+        "line_color": "#666666",
+        "line_width": 2,
+        "line_style": "curved"
+      },
+      "extra_data": {
+        "Route": "Oral",
+        "Mechanism": "HMG-CoA reductase inhibitor"
+      }
+    },
+    "rosuvastatin": {
+      "text": "Rosuvastatin",
+      "parent_id": "statins",
+      "x": 360,
+      "y": 150,
+      "direction": "auto",
+      "collapsed": false,
+      "style": {
+        "shape": "rounded_rectangle",
+        "fill_color": "#D1C4E9",
+        "border_color": "#B8A4D0",
+        "border_width": 2,
+        "text_color": "#000000",
+        "font_family": "Calibri",
+        "font_size": 11,
+        "font_bold": false,
+        "line_color": "#666666",
+        "line_width": 2,
+        "line_style": "curved"
+      },
+      "extra_data": {
+        "Route": "Oral",
+        "Mechanism": "HMG-CoA reductase inhibitor"
+      }
+    }
+  }
+}

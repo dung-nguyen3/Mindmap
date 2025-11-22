@@ -256,7 +256,7 @@ class ExcelMasterChartApp:
         self.output_filename = tk.StringVar(value="Master_Chart.xlsx")
         self.output_directory = tk.StringVar(value=str(Path.home() / "Desktop"))
         self.export_format = tk.StringVar(value="master_chart")
-        self.live_preview_var = tk.BooleanVar(value=False)
+        self.live_preview_var = tk.BooleanVar(value=True)  # Auto-colors enabled by default
 
         # Auto-save settings
         self.autosave_path = Path.home() / ".excel_master_chart_autosave.json"
@@ -919,6 +919,10 @@ class ExcelMasterChartApp:
 
         # Update row count
         self.update_row_count()
+
+        # Apply colors if live preview is enabled
+        if hasattr(self, 'live_preview_var') and self.live_preview_var.get():
+            self.root.after(100, self.apply_live_colors)  # Slight delay for sheet to render
 
     def get_column_unique_values(self, col_idx, max_values=50):
         """Get unique non-empty values from a column for auto-complete
@@ -1992,6 +1996,10 @@ class ExcelMasterChartApp:
 
         self.update_row_count()
         self.mark_saved()
+
+        # Apply colors after loading if live preview is enabled
+        if self.live_preview_var.get():
+            self.apply_live_colors()
 
     # ========================================================================
     # IMPORT FROM CSV/EXCEL

@@ -833,8 +833,15 @@ class MindmapViewPanel(ttk.Frame):
             messagebox.showwarning("No Data", "Please load data in Excel View first.")
             return
 
-        # Get selected columns in order
-        selected_cols = [col for col in columns if self.column_vars.get(col, tk.BooleanVar()).get()]
+        # Ensure column checkboxes are updated
+        if not self.column_vars:
+            self._update_column_checkboxes()
+
+        # Get selected columns in order (only from columns that exist in column_vars)
+        selected_cols = []
+        for col in columns:
+            if col in self.column_vars and self.column_vars[col].get():
+                selected_cols.append(col)
 
         if not selected_cols:
             messagebox.showwarning("No Columns", "Please select at least one column.")
@@ -849,29 +856,43 @@ class MindmapViewPanel(ttk.Frame):
         node_cache = {}  # path_tuple -> tree_item_id
 
         for row in data:
-            if not row or not any(str(cell).strip() if cell else '' for cell in row):
+            if not row:
+                continue
+
+            # Skip empty rows
+            has_content = False
+            for cell in row:
+                if cell is not None and str(cell).strip():
+                    has_content = True
+                    break
+            if not has_content:
                 continue
 
             parent_id = ''  # Root
             current_path = []
 
             for col in selected_cols:
-                col_idx = columns.index(col) if col in columns else -1
-                if col_idx < 0 or col_idx >= len(row):
+                try:
+                    col_idx = columns.index(col)
+                except ValueError:
+                    continue
+
+                if col_idx >= len(row):
                     continue
 
                 cell_value = row[col_idx]
-                if isinstance(cell_value, str):
-                    cell_value = cell_value.strip()
+                if cell_value is None:
+                    continue
+                cell_value = str(cell_value).strip()
                 if not cell_value:
                     continue
 
-                current_path.append(str(cell_value))
+                current_path.append(cell_value)
                 path_key = tuple(current_path)
 
                 if path_key not in node_cache:
                     # Create new node
-                    item_id = self.hierarchy_tree.insert(parent_id, 'end', text=str(cell_value), open=True)
+                    item_id = self.hierarchy_tree.insert(parent_id, 'end', text=cell_value, open=True)
                     node_cache[path_key] = item_id
 
                 parent_id = node_cache[path_key]
@@ -1680,30 +1701,32 @@ class MindmapViewPanel(ttk.Frame):
     def _on_line_change(self, event=None):
         """Handle line style dropdown change"""
         line_map = {
-            "Straight": LineStyle.STRAIGHT,
-            "Curved": LineStyle.CURVED,
-            "Orthogonal": LineStyle.ORTHOGONAL,
-            "Tapered": LineStyle.TAPERED,
+            "straight": LineStyle.STRAIGHT,
+            "curved": LineStyle.CURVED,
+            "orthogonal": LineStyle.ORTHOGONAL,
+            "tapered": LineStyle.TAPERED,
         }
 
-        selected = self.line_var.get()
+        selected = self.line_var.get().lower()
         if selected in line_map:
             self.mindmap.set_line_style(line_map[selected])
+            self.mindmap.redraw()  # Force redraw to show line change
 
     def _on_shape_change(self, event=None):
         """Handle shape dropdown change"""
         shape_map = {
-            "Rectangle": NodeShape.RECTANGLE,
-            "Rounded": NodeShape.ROUNDED_RECTANGLE,
-            "Ellipse": NodeShape.ELLIPSE,
-            "Pill": NodeShape.PILL,
-            "Diamond": NodeShape.DIAMOND,
-            "Hexagon": NodeShape.HEXAGON,
+            "rectangle": NodeShape.RECTANGLE,
+            "rounded": NodeShape.ROUNDED_RECTANGLE,
+            "ellipse": NodeShape.ELLIPSE,
+            "pill": NodeShape.PILL,
+            "diamond": NodeShape.DIAMOND,
+            "hexagon": NodeShape.HEXAGON,
         }
 
-        selected = self.shape_var.get()
+        selected = self.shape_var.get().lower()
         if selected in shape_map:
             self.mindmap.set_default_shape(shape_map[selected])
+            self.mindmap.redraw()  # Force redraw
 
     def _on_node_selected(self, node_id: str):
         """Handle node selection in mindmap - highlight corresponding row in tree view"""

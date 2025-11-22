@@ -418,7 +418,7 @@ class MindmapViewPanel(ttk.Frame):
         layout_combo = ttk.Combobox(toolbar, textvariable=self.layout_var, state="readonly", width=18)
         layout_combo['values'] = [
             "Tree Right", "Tree Left", "Tree Down", "Tree Up",
-            "Vertical Balanced", "Horizontal Balanced",
+            "Vertical Balanced", "Horizontal Balanced", "Four-Way Balanced",
             "Vertical Custom", "Horizontal Custom",
             "Radial", "Free Form"
         ]
@@ -454,9 +454,18 @@ class MindmapViewPanel(ttk.Frame):
         # Zoom controls
         ttk.Label(toolbar, text="Zoom:").pack(side=tk.LEFT, padx=(15, 5))
         ttk.Button(toolbar, text="-", width=3, command=self._zoom_out).pack(side=tk.LEFT)
-        self.zoom_label = ttk.Label(toolbar, text="100%", width=6)
+
+        # Zoom slider
+        self.zoom_var = tk.IntVar(value=100)
+        self.zoom_slider = ttk.Scale(toolbar, from_=25, to=200, orient=tk.HORIZONTAL,
+                                      variable=self.zoom_var, length=80,
+                                      command=self._on_zoom_slider)
+        self.zoom_slider.pack(side=tk.LEFT, padx=2)
+
+        self.zoom_label = ttk.Label(toolbar, text="100%", width=5)
         self.zoom_label.pack(side=tk.LEFT)
         ttk.Button(toolbar, text="+", width=3, command=self._zoom_in).pack(side=tk.LEFT)
+        ttk.Button(toolbar, text="Reset", width=5, command=self._zoom_reset).pack(side=tk.LEFT, padx=2)
 
         # Separator
         ttk.Separator(toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=10)
@@ -467,11 +476,22 @@ class MindmapViewPanel(ttk.Frame):
         # Refresh button
         ttk.Button(toolbar, text="Refresh", command=self._refresh_mindmap).pack(side=tk.LEFT, padx=2)
 
+        # File menu (save/load mindmap)
+        file_menu = tk.Menu(self, tearoff=0)
+        file_menu.add_command(label="Save Mindmap...", command=self._save_mindmap_json)
+        file_menu.add_command(label="Load Mindmap...", command=self._load_mindmap_json)
+
+        file_btn = ttk.Menubutton(toolbar, text="File")
+        file_btn['menu'] = file_menu
+        file_btn.pack(side=tk.RIGHT, padx=2)
+
         # Export dropdown
         export_menu = tk.Menu(self, tearoff=0)
         export_menu.add_command(label="Export as PNG...", command=self._export_png)
         export_menu.add_command(label="Export as SVG...", command=self._export_svg)
         export_menu.add_command(label="Export as Mermaid...", command=self._export_mermaid)
+        export_menu.add_separator()
+        export_menu.add_command(label="Export as JSON...", command=self._save_mindmap_json)
 
         export_btn = ttk.Menubutton(toolbar, text="Export")
         export_btn['menu'] = export_menu
@@ -747,6 +767,7 @@ class MindmapViewPanel(ttk.Frame):
             "Tree Up": LayoutType.TREE_UP,
             "Vertical Balanced": LayoutType.VERTICAL_BALANCED,
             "Horizontal Balanced": LayoutType.HORIZONTAL_BALANCED,
+            "Four-Way Balanced": LayoutType.FOUR_WAY_BALANCED,
             "Vertical Custom": LayoutType.VERTICAL_CUSTOM,
             "Horizontal Custom": LayoutType.HORIZONTAL_CUSTOM,
             "Radial": LayoutType.RADIAL,
@@ -933,6 +954,66 @@ class MindmapViewPanel(ttk.Frame):
     def _update_zoom_label(self):
         zoom_pct = int(self.mindmap.zoom_level * 100)
         self.zoom_label.config(text=f"{zoom_pct}%")
+        # Update slider if it exists
+        if hasattr(self, 'zoom_var'):
+            self.zoom_var.set(zoom_pct)
+
+    def _on_zoom_slider(self, value):
+        """Handle zoom slider change"""
+        try:
+            zoom_pct = int(float(value))
+            new_zoom = zoom_pct / 100.0
+            if abs(new_zoom - self.mindmap.zoom_level) > 0.01:
+                self.mindmap.zoom_level = new_zoom
+                self.mindmap.redraw()
+                self.zoom_label.config(text=f"{zoom_pct}%")
+        except ValueError:
+            pass
+
+    def _zoom_reset(self):
+        """Reset zoom to 100%"""
+        self.mindmap.zoom_level = 1.0
+        self.mindmap.redraw()
+        self._update_zoom_label()
+
+    def _save_mindmap_json(self):
+        """Save mindmap to JSON file"""
+        if not self.mindmap.root_id:
+            messagebox.showwarning("Save Warning", "No mindmap to save. Please generate a mindmap first.")
+            return
+
+        filepath = filedialog.asksaveasfilename(
+            title="Save Mindmap",
+            defaultextension=".json",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+        )
+
+        if filepath:
+            try:
+                data = self.mindmap.to_dict()
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
+                messagebox.showinfo("Save", f"Mindmap saved to {filepath}")
+            except Exception as e:
+                messagebox.showerror("Save Error", f"Failed to save mindmap: {e}")
+
+    def _load_mindmap_json(self):
+        """Load mindmap from JSON file"""
+        filepath = filedialog.askopenfilename(
+            title="Load Mindmap",
+            filetypes=[("JSON files", "*.json"), ("All files", "*.*")]
+        )
+
+        if filepath:
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                self.mindmap.from_dict(data)
+                self._update_tree_view()
+                self._update_status()
+                messagebox.showinfo("Load", f"Mindmap loaded from {filepath}")
+            except Exception as e:
+                messagebox.showerror("Load Error", f"Failed to load mindmap: {e}")
 
     def _update_status(self):
         node_count = len(self.mindmap.nodes)

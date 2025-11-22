@@ -67,6 +67,7 @@ class LayoutType(Enum):
     TREE_LEFT = "tree_left"
     VERTICAL_BALANCED = "vertical_balanced"
     HORIZONTAL_BALANCED = "horizontal_balanced"
+    FOUR_WAY_BALANCED = "four_way_balanced"  # Combined vertical + horizontal
     VERTICAL_CUSTOM = "vertical_custom"
     HORIZONTAL_CUSTOM = "horizontal_custom"
     RADIAL = "radial"
@@ -183,6 +184,7 @@ class MindmapCanvas(tk.Canvas):
         # Editing state
         self.editing_node_id: Optional[str] = None
         self.edit_entry: Optional[tk.Entry] = None
+        self.edit_window_id: Optional[int] = None
 
         # Undo/Redo stacks
         self.undo_stack: List[Dict] = []
@@ -213,10 +215,14 @@ class MindmapCanvas(tk.Canvas):
         self.bind('<ButtonRelease-2>', self._on_pan_release)
         self.bind('<Button-3>', self._on_right_click)
 
-        # Zoom with scroll wheel
-        self.bind('<MouseWheel>', self._on_scroll)  # Windows/Mac
-        self.bind('<Button-4>', self._on_scroll_up)  # Linux
-        self.bind('<Button-5>', self._on_scroll_down)  # Linux
+        # Zoom with scroll wheel - Ctrl+scroll for zoom, regular scroll for pan
+        self.bind('<MouseWheel>', self._on_scroll_pan)  # Default: pan on Mac/Windows
+        self.bind('<Shift-MouseWheel>', self._on_scroll_horizontal)  # Horizontal scroll
+        self.bind('<Control-MouseWheel>', self._on_scroll_zoom)  # Ctrl+scroll for zoom
+        self.bind('<Button-4>', self._on_scroll_pan_up)  # Linux scroll up
+        self.bind('<Button-5>', self._on_scroll_pan_down)  # Linux scroll down
+        self.bind('<Control-Button-4>', self._on_scroll_up)  # Linux Ctrl+scroll zoom
+        self.bind('<Control-Button-5>', self._on_scroll_down)  # Linux Ctrl+scroll zoom
 
         # Keyboard
         self.bind('<Delete>', self._on_delete)
@@ -622,6 +628,7 @@ class MindmapCanvas(tk.Canvas):
             LayoutType.TREE_LEFT: self._layout_tree_left,
             LayoutType.VERTICAL_BALANCED: self._layout_vertical_balanced,
             LayoutType.HORIZONTAL_BALANCED: self._layout_horizontal_balanced,
+            LayoutType.FOUR_WAY_BALANCED: self._layout_four_way_balanced,
             LayoutType.VERTICAL_CUSTOM: self._layout_vertical_custom,
             LayoutType.HORIZONTAL_CUSTOM: self._layout_horizontal_custom,
             LayoutType.RADIAL: self._layout_radial,
@@ -834,6 +841,62 @@ class MindmapCanvas(tk.Canvas):
                                                self.h_spacing,
                                                (current_y + current_y + child_height) / 2, 'right')
                 current_y += child_height
+
+    def _layout_four_way_balanced(self):
+        """Layout with root in center, children split into 4 quadrants (org chart style)"""
+        if self.root_id not in self.nodes:
+            return
+
+        root = self.nodes[self.root_id]
+        root.x = 0
+        root.y = 0
+
+        if not root.children_ids:
+            return
+
+        # Split children into 4 groups: up-left, up-right, down-left, down-right
+        n = len(root.children_ids)
+        quarter = max(1, n // 4)
+
+        up_left = root.children_ids[:quarter]
+        up_right = root.children_ids[quarter:quarter*2]
+        down_left = root.children_ids[quarter*2:quarter*3]
+        down_right = root.children_ids[quarter*3:]
+
+        # If odd distribution, balance it out
+        if n <= 2:
+            up_right = root.children_ids[:n//2] if n > 0 else []
+            down_right = root.children_ids[n//2:] if n > 1 else []
+            up_left = down_left = []
+        elif n <= 4:
+            up_left = [root.children_ids[0]] if n > 0 else []
+            up_right = [root.children_ids[1]] if n > 1 else []
+            down_left = [root.children_ids[2]] if n > 2 else []
+            down_right = [root.children_ids[3]] if n > 3 else []
+
+        # Layout up-left quadrant
+        for i, child_id in enumerate(up_left):
+            self._layout_subtree_direction(child_id,
+                                           -self.h_spacing,
+                                           -self.v_spacing * (i + 1), 'left')
+
+        # Layout up-right quadrant
+        for i, child_id in enumerate(up_right):
+            self._layout_subtree_direction(child_id,
+                                           self.h_spacing,
+                                           -self.v_spacing * (i + 1), 'right')
+
+        # Layout down-left quadrant
+        for i, child_id in enumerate(down_left):
+            self._layout_subtree_direction(child_id,
+                                           -self.h_spacing,
+                                           self.v_spacing * (i + 1), 'left')
+
+        # Layout down-right quadrant
+        for i, child_id in enumerate(down_right):
+            self._layout_subtree_direction(child_id,
+                                           self.h_spacing,
+                                           self.v_spacing * (i + 1), 'right')
 
     def _layout_subtree_direction(self, node_id: str, x: float, y: float, direction: str):
         """Layout a subtree in a specific direction"""
@@ -1095,9 +1158,27 @@ class MindmapCanvas(tk.Canvas):
         """Handle pan release"""
         self.panning = False
 
-    def _on_scroll(self, event):
-        """Handle scroll wheel for zoom"""
-        # Get the canvas coordinates of the mouse
+    def _on_scroll_pan(self, event):
+        """Handle scroll wheel for panning (Mac trackpad two-finger scroll)"""
+        # On Mac, delta is small (1-2), on Windows it's larger (120)
+        import platform
+        if platform.system() == 'Darwin':  # Mac
+            # Mac trackpad: scroll to pan vertically
+            self.yview_scroll(-event.delta, "units")
+        else:
+            # Windows: larger delta values
+            self.yview_scroll(-1 if event.delta > 0 else 1, "units")
+
+    def _on_scroll_horizontal(self, event):
+        """Handle horizontal scroll (Shift+scroll)"""
+        import platform
+        if platform.system() == 'Darwin':
+            self.xview_scroll(-event.delta, "units")
+        else:
+            self.xview_scroll(-1 if event.delta > 0 else 1, "units")
+
+    def _on_scroll_zoom(self, event):
+        """Handle Ctrl+scroll wheel for zoom"""
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
 
@@ -1109,14 +1190,22 @@ class MindmapCanvas(tk.Canvas):
 
         self._zoom(factor, x, y)
 
+    def _on_scroll_pan_up(self, event):
+        """Handle Linux scroll up for pan"""
+        self.yview_scroll(-3, "units")
+
+    def _on_scroll_pan_down(self, event):
+        """Handle Linux scroll down for pan"""
+        self.yview_scroll(3, "units")
+
     def _on_scroll_up(self, event):
-        """Handle Linux scroll up"""
+        """Handle Linux Ctrl+scroll up for zoom"""
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
         self._zoom(1.1, x, y)
 
     def _on_scroll_down(self, event):
-        """Handle Linux scroll down"""
+        """Handle Linux Ctrl+scroll down for zoom"""
         x = self.canvasx(event.x)
         y = self.canvasy(event.y)
         self._zoom(0.9, x, y)
@@ -1341,27 +1430,34 @@ class MindmapCanvas(tk.Canvas):
         if node_id not in self.nodes:
             return
 
+        # Cancel any existing edit first
+        if self.editing_node_id:
+            self._cleanup_editing()
+
         self.editing_node_id = node_id
         node = self.nodes[node_id]
 
-        # Create entry widget at node position
-        x = node.x * self.zoom_level
-        y = node.y * self.zoom_level
-
-        self.edit_entry = tk.Entry(self, font=(node.style.font_family,
-                                               int(node.style.font_size * self.zoom_level)))
+        # Create entry widget
+        font_size = max(int(node.style.font_size * self.zoom_level), 10)
+        self.edit_entry = tk.Entry(self, font=(node.style.font_family, font_size),
+                                   justify='center', bd=2, relief='solid')
         self.edit_entry.insert(0, node.text)
         self.edit_entry.select_range(0, tk.END)
 
-        # Position entry
-        self.edit_entry.place(x=self.winfo_width()/2 + x - node.width/2,
-                             y=self.winfo_height()/2 + y - 10,
-                             width=max(node.width, 100))
+        # Use canvas create_window to position at node's canvas coordinates
+        # This ensures the entry stays with the node even when scrolled
+        x = node.x * self.zoom_level
+        y = node.y * self.zoom_level
+        entry_width = max(node.width + 20, 120)
+
+        self.edit_window_id = self.create_window(x, y, window=self.edit_entry,
+                                                  width=entry_width, height=node.height)
 
         self.edit_entry.focus_set()
         self.edit_entry.bind('<Return>', lambda e: self._finish_editing())
         self.edit_entry.bind('<Escape>', lambda e: self._cancel_editing())
-        self.edit_entry.bind('<FocusOut>', lambda e: self._finish_editing())
+        # Don't bind FocusOut - it causes issues when clicking elsewhere
+        self.edit_entry.bind('<Tab>', lambda e: self._finish_editing())
 
     def _finish_editing(self):
         """Finish inline editing and save changes"""
@@ -1381,6 +1477,9 @@ class MindmapCanvas(tk.Canvas):
 
     def _cleanup_editing(self):
         """Clean up editing widgets"""
+        if hasattr(self, 'edit_window_id') and self.edit_window_id:
+            self.delete(self.edit_window_id)
+            self.edit_window_id = None
         if self.edit_entry:
             self.edit_entry.destroy()
             self.edit_entry = None

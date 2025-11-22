@@ -448,9 +448,9 @@ class ExcelMasterChartApp:
             # Could hide Excel ribbon or show mindmap toolbar
             # For now, keep ribbon visible
 
-            # Refresh mindmap when switching to that view
+            # Auto-apply mindmap when switching to that view
             if hasattr(self, 'mindmap_panel') and self.mindmap_panel:
-                self.mindmap_panel._update_tree_view()
+                self.mindmap_panel.auto_apply_if_data()
 
     def create_content_area(self):
         """Create the main content area with Excel and Mindmap views"""

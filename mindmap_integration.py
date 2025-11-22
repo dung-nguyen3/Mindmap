@@ -643,6 +643,9 @@ class MindmapViewPanel(ttk.Frame):
         # Mapping button
         ttk.Button(toolbar, text="Column Mapping...", command=self._show_mapping_dialog).pack(side=tk.LEFT, padx=2)
 
+        # Apply button - quick apply with current or default mapping
+        ttk.Button(toolbar, text="Apply", command=self._apply_mindmap).pack(side=tk.LEFT, padx=2)
+
         # Refresh button
         ttk.Button(toolbar, text="Refresh", command=self._refresh_mindmap).pack(side=tk.LEFT, padx=2)
 
@@ -1402,6 +1405,55 @@ class MindmapViewPanel(ttk.Frame):
         if not self.column_mapping:
             self._show_mapping_dialog()
         else:
+            self.load_from_excel_data()
+            self.sync_status_label.config(text="Synced", foreground="green")
+
+    def _apply_mindmap(self):
+        """Apply mindmap with current or default mapping
+
+        If no mapping exists, creates a default mapping using the first 2-4 columns.
+        This allows quick generation without going through the mapping dialog.
+        """
+        columns = self.get_columns()
+        data = self.get_excel_data()
+
+        if not columns or not data:
+            messagebox.showwarning("No Data", "Please add data in the Excel View first.")
+            return
+
+        # If no mapping exists, create a default one using first columns
+        if not self.column_mapping:
+            # Use first 2-4 columns as hierarchy levels
+            num_levels = min(4, len(columns))
+            default_levels = columns[:num_levels]
+
+            self.column_mapping = {
+                'mode': 'by_columns',
+                'levels': default_levels,
+                'include_all': True,
+                'color_by_group': True
+            }
+
+        # Apply the mapping
+        self.load_from_excel_data()
+        self.sync_status_label.config(text="Synced", foreground="green")
+
+    def auto_apply_if_data(self):
+        """Auto-apply mindmap if data exists (called when switching to view)"""
+        columns = self.get_columns()
+        data = self.get_excel_data()
+
+        if columns and data:
+            # If we have data but no mapping, create default
+            if not self.column_mapping:
+                num_levels = min(4, len(columns))
+                self.column_mapping = {
+                    'mode': 'by_columns',
+                    'levels': columns[:num_levels],
+                    'include_all': True,
+                    'color_by_group': True
+                }
+
             self.load_from_excel_data()
             self.sync_status_label.config(text="Synced", foreground="green")
 

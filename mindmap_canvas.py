@@ -258,6 +258,12 @@ class MindmapCanvas(tk.Canvas):
         self.bind('<Up>', self._on_arrow_up)
         self.bind('<Down>', self._on_arrow_down)
 
+        # View shortcuts - quickly find the mindmap
+        self.bind('<Home>', lambda e: self.center_on_root())
+        self.bind('<Control-0>', lambda e: self._reset_view())
+        self.bind('<Control-Key-0>', lambda e: self._reset_view())
+        self.bind('<Double-Button-1>', self._on_double_click_canvas)
+
     # ========================================================================
     # NODE MANAGEMENT
     # ========================================================================
@@ -1718,6 +1724,26 @@ class MindmapCanvas(tk.Canvas):
             root = self.nodes[self.root_id]
             self.xview_moveto(0.5 - root.x * self.zoom_level / self.VIRTUAL_WIDTH)
             self.yview_moveto(0.5 - root.y * self.zoom_level / self.VIRTUAL_HEIGHT)
+
+    def _reset_view(self):
+        """Reset view: zoom to 100% and center on root"""
+        self.zoom_level = 1.0
+        self.redraw()
+        self.center_on_root()
+
+    def _on_double_click_canvas(self, event):
+        """Handle double-click on empty canvas - fit all nodes in view"""
+        # Check if clicked on a node
+        canvas_x = self.canvasx(event.x)
+        canvas_y = self.canvasy(event.y)
+        clicked_items = self.find_overlapping(canvas_x - 5, canvas_y - 5, canvas_x + 5, canvas_y + 5)
+
+        # Filter out connection lines
+        node_items = [item for item in clicked_items if 'connection' not in self.gettags(item)]
+
+        if not node_items:
+            # Double-clicked on empty space - fit all nodes in view
+            self.fit_all()
 
     def _set_zoom(self, level: float):
         """Set zoom level"""

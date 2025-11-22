@@ -515,9 +515,9 @@ class ExcelMasterChartApp:
 
     def create_ribbon(self):
         """Create Excel-style ribbon toolbar with tabs"""
-        # Main ribbon container
+        # Main ribbon container (row=1 because view tabs are at row=0)
         ribbon_wrapper = ttk.Frame(self.root)
-        ribbon_wrapper.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=0, pady=0)
+        ribbon_wrapper.grid(row=1, column=0, sticky=(tk.W, tk.E), padx=0, pady=0)
 
         # Toggle button bar
         toggle_bar = ttk.Frame(ribbon_wrapper, relief=tk.RAISED, borderwidth=1)

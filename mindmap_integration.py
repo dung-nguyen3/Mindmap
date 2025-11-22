@@ -543,8 +543,21 @@ class MindmapViewPanel(ttk.Frame):
         self.mindmap.on_node_selected = self._on_node_selected
         self.mindmap.on_node_edited = self._on_node_edited
         self.mindmap.on_structure_changed = self._on_structure_changed
+        self.mindmap.on_style_edit = self._on_style_edit  # Connect style editor
 
         self.paned.add(right_frame, minsize=300)
+
+    def _on_style_edit(self, node_id: str):
+        """Show style editor dialog for a node"""
+        node = self.mindmap.get_node(node_id)
+        if not node:
+            return
+
+        def apply_style(new_style):
+            self.mindmap.update_node_style(node_id, new_style)
+            self.mindmap.redraw()
+
+        StyleEditorDialog(self, node, apply_style)
 
     def _create_status_bar(self):
         """Create status bar"""
@@ -774,20 +787,66 @@ class MindmapViewPanel(ttk.Frame):
             self.mindmap.set_default_shape(shape_map[selected])
 
     def _on_node_selected(self, node_id: str):
-        """Handle node selection in mindmap"""
-        # Could highlight corresponding row in tree view
-        pass
+        """Handle node selection in mindmap - highlight corresponding row in tree view"""
+        if not node_id or node_id not in self.mindmap.nodes:
+            return
+
+        node = self.mindmap.nodes[node_id]
+        node_text = node.text
+
+        # Find and select matching row in tree view
+        for item in self.data_tree.get_children():
+            values = self.data_tree.item(item, 'values')
+            # Check if any column contains the node text
+            if node_text in values:
+                self.data_tree.selection_set(item)
+                self.data_tree.focus(item)
+                self.data_tree.see(item)  # Scroll to make visible
+                break
 
     def _on_node_edited(self, node_id: str, new_text: str):
-        """Handle node text edit in mindmap"""
+        """Handle node text edit in mindmap - sync back to Excel data"""
         if self.syncing:
             return
 
         self.syncing = True
-        # Sync change back to Excel data
-        # This would need to identify which row/cell was edited
+
+        node = self.mindmap.nodes.get(node_id)
+        if node:
+            old_text = node.text if hasattr(node, '_old_text') else ""
+
+            # Find and update matching row in tree view
+            for item in self.data_tree.get_children():
+                values = list(self.data_tree.item(item, 'values'))
+                # Find column with old text and update it
+                for i, val in enumerate(values):
+                    if val == old_text or val == new_text:
+                        values[i] = new_text
+                        self.data_tree.item(item, values=values)
+
+                        # Also update the main Excel sheet via callback
+                        row_idx = self.data_tree.index(item)
+                        self._sync_row_to_excel(row_idx, values)
+                        break
+
         self.sync_status_label.config(text="Modified", foreground="orange")
         self.syncing = False
+
+    def _sync_row_to_excel(self, row_idx: int, values: list):
+        """Sync a row from tree view back to main Excel data"""
+        try:
+            # Get current Excel data
+            data = self.get_excel_data()
+            if row_idx < len(data):
+                # Update the row
+                for i, val in enumerate(values):
+                    if i < len(data[row_idx]):
+                        data[row_idx][i] = val
+
+                # Push back to Excel
+                self.update_excel_data(data)
+        except Exception as e:
+            print(f"Error syncing to Excel: {e}")
 
     def _on_structure_changed(self):
         """Handle structure change in mindmap"""
@@ -835,8 +894,14 @@ class MindmapViewPanel(ttk.Frame):
             self.data_tree.item(item[0], values=new_values)
             entry.destroy()
 
-            # Update Excel data
-            # This would sync back to the main sheet
+            # Update Excel data - sync back to the main sheet
+            row_idx = self.data_tree.index(item[0])
+            self._sync_row_to_excel(row_idx, new_values)
+
+            # Also refresh mindmap to reflect changes
+            if self.column_mapping:
+                self.load_from_excel_data()
+
             self.sync_status_label.config(text="Modified", foreground="orange")
 
         def cancel_edit(event=None):
@@ -904,9 +969,13 @@ class MindmapViewPanel(ttk.Frame):
     # ========================================================================
 
     def _export_png(self):
-        """Export mindmap as PNG"""
+        """Export mindmap as PNG using Pillow"""
         if not PIL_AVAILABLE:
             messagebox.showerror("Export Error", "PNG export requires Pillow library.\nInstall with: pip install Pillow")
+            return
+
+        if not self.mindmap.nodes:
+            messagebox.showwarning("Export Warning", "No mindmap to export. Please generate a mindmap first.")
             return
 
         filepath = filedialog.asksaveasfilename(
@@ -917,19 +986,90 @@ class MindmapViewPanel(ttk.Frame):
 
         if filepath:
             try:
-                # Get canvas postscript and convert
-                self.mindmap.update()
-                ps = self.mindmap.postscript(colormode='color')
+                # Calculate bounds of all nodes
+                min_x = min(n.x - n.width/2 for n in self.mindmap.nodes.values()) - 50
+                max_x = max(n.x + n.width/2 for n in self.mindmap.nodes.values()) + 50
+                min_y = min(n.y - n.height/2 for n in self.mindmap.nodes.values()) - 50
+                max_y = max(n.y + n.height/2 for n in self.mindmap.nodes.values()) + 50
 
-                # This is a simplified export - full implementation would use proper rendering
-                messagebox.showinfo("Export", f"PNG export to {filepath}\n(Basic implementation - would need enhanced rendering)")
+                width = int(max_x - min_x)
+                height = int(max_y - min_y)
+
+                # Create image with white background
+                img = Image.new('RGB', (width, height), 'white')
+                draw = ImageDraw.Draw(img)
+
+                # Offset to center content
+                offset_x = -min_x
+                offset_y = -min_y
+
+                # Draw connections first
+                for node in self.mindmap.nodes.values():
+                    if node.parent_id and node.parent_id in self.mindmap.nodes:
+                        parent = self.mindmap.nodes[node.parent_id]
+                        px, py = parent.x + offset_x, parent.y + offset_y
+                        cx, cy = node.x + offset_x, node.y + offset_y
+                        line_color = node.style.line_color.lstrip('#')
+                        if len(line_color) == 6:
+                            line_color = tuple(int(line_color[i:i+2], 16) for i in (0, 2, 4))
+                        else:
+                            line_color = (100, 100, 100)
+                        draw.line([(px, py), (cx, cy)], fill=line_color, width=2)
+
+                # Draw nodes
+                for node in self.mindmap.nodes.values():
+                    x, y = node.x + offset_x, node.y + offset_y
+                    w, h = max(node.width, 80), max(node.height, 30)
+
+                    # Parse colors
+                    fill_color = node.style.fill_color.lstrip('#')
+                    if len(fill_color) == 6:
+                        fill_color = tuple(int(fill_color[i:i+2], 16) for i in (0, 2, 4))
+                    else:
+                        fill_color = (227, 242, 253)
+
+                    border_color = node.style.border_color.lstrip('#')
+                    if len(border_color) == 6:
+                        border_color = tuple(int(border_color[i:i+2], 16) for i in (0, 2, 4))
+                    else:
+                        border_color = (179, 212, 237)
+
+                    # Draw rounded rectangle (simplified as rectangle)
+                    x1, y1 = x - w/2, y - h/2
+                    x2, y2 = x + w/2, y + h/2
+                    draw.rectangle([x1, y1, x2, y2], fill=fill_color, outline=border_color, width=2)
+
+                    # Draw text
+                    text_color = node.style.text_color.lstrip('#')
+                    if len(text_color) == 6:
+                        text_color = tuple(int(text_color[i:i+2], 16) for i in (0, 2, 4))
+                    else:
+                        text_color = (0, 0, 0)
+
+                    # Center text in node
+                    try:
+                        font = ImageFont.truetype("arial.ttf", node.style.font_size)
+                    except:
+                        font = ImageFont.load_default()
+
+                    bbox = draw.textbbox((0, 0), node.text, font=font)
+                    text_w = bbox[2] - bbox[0]
+                    text_h = bbox[3] - bbox[1]
+                    draw.text((x - text_w/2, y - text_h/2), node.text, fill=text_color, font=font)
+
+                img.save(filepath)
+                messagebox.showinfo("Export", f"PNG exported to {filepath}")
             except Exception as e:
                 messagebox.showerror("Export Error", f"Failed to export PNG: {e}")
 
     def _export_svg(self):
-        """Export mindmap as SVG"""
+        """Export mindmap as SVG with proper node sizes and connections"""
         if not SVG_AVAILABLE:
             messagebox.showerror("Export Error", "SVG export requires svgwrite library.\nInstall with: pip install svgwrite")
+            return
+
+        if not self.mindmap.nodes:
+            messagebox.showwarning("Export Warning", "No mindmap to export. Please generate a mindmap first.")
             return
 
         filepath = filedialog.asksaveasfilename(
@@ -940,16 +1080,74 @@ class MindmapViewPanel(ttk.Frame):
 
         if filepath:
             try:
-                # Create SVG
-                dwg = svgwrite.Drawing(filepath, size=('1000px', '800px'))
+                # Calculate bounds
+                min_x = min(n.x - n.width/2 for n in self.mindmap.nodes.values()) - 50
+                max_x = max(n.x + n.width/2 for n in self.mindmap.nodes.values()) + 50
+                min_y = min(n.y - n.height/2 for n in self.mindmap.nodes.values()) - 50
+                max_y = max(n.y + n.height/2 for n in self.mindmap.nodes.values()) + 50
 
-                # Add nodes and connections
-                # This is a simplified implementation
+                width = int(max_x - min_x)
+                height = int(max_y - min_y)
+                offset_x = -min_x
+                offset_y = -min_y
+
+                # Create SVG with proper size
+                dwg = svgwrite.Drawing(filepath, size=(f'{width}px', f'{height}px'))
+                dwg.add(dwg.rect(insert=(0, 0), size=(width, height), fill='white'))
+
+                # Draw connections first
                 for node in self.mindmap.nodes.values():
-                    x, y = node.x + 500, node.y + 400  # Offset for centering
-                    dwg.add(dwg.rect(insert=(x - 50, y - 20), size=(100, 40),
-                                    fill=node.style.fill_color, stroke=node.style.border_color))
-                    dwg.add(dwg.text(node.text, insert=(x, y), text_anchor='middle'))
+                    if node.parent_id and node.parent_id in self.mindmap.nodes:
+                        parent = self.mindmap.nodes[node.parent_id]
+                        px, py = parent.x + offset_x, parent.y + offset_y
+                        cx, cy = node.x + offset_x, node.y + offset_y
+
+                        line_color = node.style.line_color
+                        if not line_color.startswith('#'):
+                            line_color = f'#{line_color}'
+
+                        # Draw curved line
+                        mid_x = (px + cx) / 2
+                        path_data = f'M {px},{py} Q {mid_x},{py} {mid_x},{(py+cy)/2} T {cx},{cy}'
+                        dwg.add(dwg.path(d=path_data, stroke=line_color, fill='none',
+                                        stroke_width=node.style.line_width))
+
+                # Draw nodes
+                for node in self.mindmap.nodes.values():
+                    x, y = node.x + offset_x, node.y + offset_y
+                    w, h = max(node.width, 80), max(node.height, 30)
+
+                    fill_color = node.style.fill_color
+                    if not fill_color.startswith('#'):
+                        fill_color = f'#{fill_color}'
+
+                    border_color = node.style.border_color
+                    if not border_color.startswith('#'):
+                        border_color = f'#{border_color}'
+
+                    text_color = node.style.text_color
+                    if not text_color.startswith('#'):
+                        text_color = f'#{text_color}'
+
+                    # Draw rounded rectangle
+                    dwg.add(dwg.rect(
+                        insert=(x - w/2, y - h/2),
+                        size=(w, h),
+                        rx=8, ry=8,  # Rounded corners
+                        fill=fill_color,
+                        stroke=border_color,
+                        stroke_width=node.style.border_width
+                    ))
+
+                    # Draw text
+                    dwg.add(dwg.text(
+                        node.text,
+                        insert=(x, y + 5),  # Slight offset for vertical centering
+                        text_anchor='middle',
+                        font_family=node.style.font_family,
+                        font_size=f'{node.style.font_size}px',
+                        fill=text_color
+                    ))
 
                 dwg.save()
                 messagebox.showinfo("Export", f"SVG exported to {filepath}")

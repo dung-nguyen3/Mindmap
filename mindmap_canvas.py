@@ -192,6 +192,7 @@ class MindmapCanvas(tk.Canvas):
         self.on_node_selected: Optional[callable] = None
         self.on_node_edited: Optional[callable] = None
         self.on_structure_changed: Optional[callable] = None
+        self.on_style_edit: Optional[callable] = None  # For style editor dialog
 
         # Configure scrolling
         self.configure(scrollregion=(-self.VIRTUAL_WIDTH//2, -self.VIRTUAL_HEIGHT//2,
@@ -233,13 +234,35 @@ class MindmapCanvas(tk.Canvas):
         self.bind('<KeyRelease-space>', self._on_space_release)
         self.space_pressed = False
 
+        # Keyboard shortcuts
+        self.bind('<Control-z>', self._on_undo)
+        self.bind('<Control-y>', self._on_redo)
+        self.bind('<Control-Z>', self._on_undo)
+        self.bind('<Control-Y>', self._on_redo)
+        self.bind('<Control-c>', lambda e: self._copy_selected())
+        self.bind('<Control-x>', lambda e: self._cut_selected())
+        self.bind('<Control-v>', self._on_paste)
+        self.bind('<Control-C>', lambda e: self._copy_selected())
+        self.bind('<Control-X>', lambda e: self._cut_selected())
+        self.bind('<Control-V>', self._on_paste)
+
+        # Arrow key navigation
+        self.bind('<Left>', self._on_arrow_left)
+        self.bind('<Right>', self._on_arrow_right)
+        self.bind('<Up>', self._on_arrow_up)
+        self.bind('<Down>', self._on_arrow_down)
+
     # ========================================================================
     # NODE MANAGEMENT
     # ========================================================================
 
     def add_node(self, text: str, parent_id: Optional[str] = None,
-                 style: Optional[NodeStyle] = None, extra_data: Dict = None) -> str:
+                 style: Optional[NodeStyle] = None, extra_data: Dict = None,
+                 save_undo: bool = True) -> str:
         """Add a new node to the mindmap"""
+        if save_undo and (self.root_id is not None):  # Save undo unless it's the first node
+            self._save_undo_state()
+
         node = MindmapNode(
             text=text,
             parent_id=parent_id,
@@ -257,17 +280,20 @@ class MindmapCanvas(tk.Canvas):
 
         return node.id
 
-    def remove_node(self, node_id: str, remove_children: bool = True):
+    def remove_node(self, node_id: str, remove_children: bool = True, save_undo: bool = True):
         """Remove a node and optionally its children"""
         if node_id not in self.nodes:
             return
 
+        if save_undo:
+            self._save_undo_state()
+
         node = self.nodes[node_id]
 
-        # Remove children first
+        # Remove children first (don't save undo for each child - already saved above)
         if remove_children:
             for child_id in node.children_ids.copy():
-                self.remove_node(child_id, remove_children=True)
+                self.remove_node(child_id, remove_children=True, save_undo=False)
 
         # Remove from parent's children list
         if node.parent_id and node.parent_id in self.nodes:
@@ -290,15 +316,19 @@ class MindmapCanvas(tk.Canvas):
         if node_id == self.root_id:
             self.root_id = None
 
-    def update_node_text(self, node_id: str, text: str):
+    def update_node_text(self, node_id: str, text: str, save_undo: bool = True):
         """Update the text of a node"""
         if node_id in self.nodes:
+            if save_undo:
+                self._save_undo_state()
             self.nodes[node_id].text = text
             self._redraw_node(node_id)
 
-    def update_node_style(self, node_id: str, style: NodeStyle):
+    def update_node_style(self, node_id: str, style: NodeStyle, save_undo: bool = True):
         """Update the style of a node"""
         if node_id in self.nodes:
+            if save_undo:
+                self._save_undo_state()
             self.nodes[node_id].style = style
             self._redraw_node(node_id)
 
@@ -965,8 +995,12 @@ class MindmapCanvas(tk.Canvas):
             self.pan_start_y = event.y
             return
 
+        # Convert screen coordinates to canvas coordinates (handles pan offset)
+        canvas_x = self.canvasx(event.x)
+        canvas_y = self.canvasy(event.y)
+
         # Check if clicked on empty space
-        clicked_items = self.find_overlapping(event.x - 2, event.y - 2, event.x + 2, event.y + 2)
+        clicked_items = self.find_overlapping(canvas_x - 2, canvas_y - 2, canvas_x + 2, canvas_y + 2)
 
         if not clicked_items or all('connection' in self.gettags(item) for item in clicked_items):
             # Clicked on empty space - clear selection
@@ -1173,6 +1207,116 @@ class MindmapCanvas(tk.Canvas):
         self.config(cursor="")
         self.panning = False
 
+    def _on_undo(self, event=None):
+        """Handle undo (Ctrl+Z)"""
+        if self.undo_stack:
+            # Save current state to redo stack
+            self.redo_stack.append(self.to_dict())
+            # Restore from undo stack
+            state = self.undo_stack.pop()
+            self.from_dict(state)
+        return "break"
+
+    def _on_redo(self, event=None):
+        """Handle redo (Ctrl+Y)"""
+        if self.redo_stack:
+            # Save current state to undo stack
+            self.undo_stack.append(self.to_dict())
+            # Restore from redo stack
+            state = self.redo_stack.pop()
+            self.from_dict(state)
+        return "break"
+
+    def _save_undo_state(self):
+        """Save current state to undo stack"""
+        self.undo_stack.append(self.to_dict())
+        # Clear redo stack on new action
+        self.redo_stack.clear()
+        # Limit stack size
+        if len(self.undo_stack) > 50:
+            self.undo_stack.pop(0)
+
+    def _on_paste(self, event=None):
+        """Handle paste (Ctrl+V)"""
+        if self.selected_nodes:
+            self._paste_to(self.selected_nodes[0])
+        elif self.root_id:
+            self._paste_to(self.root_id)
+        return "break"
+
+    def _on_arrow_left(self, event):
+        """Handle left arrow - navigate to parent"""
+        if self.editing_node_id:
+            return  # Don't navigate while editing
+
+        if self.selected_nodes:
+            node = self.nodes.get(self.selected_nodes[0])
+            if node and node.parent_id:
+                self._clear_selection()
+                self.selected_nodes = [node.parent_id]
+                self.redraw()
+                if self.on_node_selected:
+                    self.on_node_selected(node.parent_id)
+        return "break"
+
+    def _on_arrow_right(self, event):
+        """Handle right arrow - navigate to first child"""
+        if self.editing_node_id:
+            return  # Don't navigate while editing
+
+        if self.selected_nodes:
+            node = self.nodes.get(self.selected_nodes[0])
+            if node and node.children_ids:
+                first_child = node.children_ids[0]
+                self._clear_selection()
+                self.selected_nodes = [first_child]
+                self.redraw()
+                if self.on_node_selected:
+                    self.on_node_selected(first_child)
+        return "break"
+
+    def _on_arrow_up(self, event):
+        """Handle up arrow - navigate to previous sibling"""
+        if self.editing_node_id:
+            return  # Don't navigate while editing
+
+        if self.selected_nodes:
+            node = self.nodes.get(self.selected_nodes[0])
+            if node and node.parent_id:
+                parent = self.nodes.get(node.parent_id)
+                if parent:
+                    siblings = parent.children_ids
+                    idx = siblings.index(node.id) if node.id in siblings else -1
+                    if idx > 0:
+                        prev_sibling = siblings[idx - 1]
+                        self._clear_selection()
+                        self.selected_nodes = [prev_sibling]
+                        self.redraw()
+                        if self.on_node_selected:
+                            self.on_node_selected(prev_sibling)
+        return "break"
+
+    def _on_arrow_down(self, event):
+        """Handle down arrow - navigate to next sibling"""
+        if self.editing_node_id:
+            return  # Don't navigate while editing
+
+        if self.selected_nodes:
+            node = self.nodes.get(self.selected_nodes[0])
+            if node and node.parent_id:
+                parent = self.nodes.get(node.parent_id)
+                if parent:
+                    siblings = parent.children_ids
+                    idx = siblings.index(node.id) if node.id in siblings else -1
+                    if idx >= 0 and idx < len(siblings) - 1:
+                        next_sibling = siblings[idx + 1]
+                        self._clear_selection()
+                        self.selected_nodes = [next_sibling]
+                        self.redraw()
+                        if self.on_node_selected:
+                            self.on_node_selected(next_sibling)
+        return "break"
+
     # ========================================================================
     # SELECTION
     # ========================================================================
@@ -1355,9 +1499,12 @@ class MindmapCanvas(tk.Canvas):
             self.redraw()
 
     def _show_style_dialog(self, node_id: str):
-        """Show style editing dialog"""
-        # This will be implemented in the main app
-        pass
+        """Show style editing dialog - calls external callback if set"""
+        if hasattr(self, 'on_style_edit') and self.on_style_edit:
+            self.on_style_edit(node_id)
+        else:
+            # Fallback: no dialog available
+            pass
 
     def _cut_selected(self):
         """Cut selected nodes"""

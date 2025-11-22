@@ -1094,6 +1094,13 @@ class MindmapViewPanel(ttk.Frame):
         # Clear mindmap
         self.mindmap.clear()
 
+        # Get all root items from hierarchy tree
+        root_items = self.hierarchy_tree.get_children()
+        if not root_items:
+            self._update_status()
+            self.sync_status_label.config(text="Empty", foreground="gray")
+            return
+
         # Build mindmap from tree
         color_index = 0
 
@@ -1102,7 +1109,7 @@ class MindmapViewPanel(ttk.Frame):
 
             text = self.hierarchy_tree.item(tree_item, 'text')
             if not text:
-                return
+                return None
 
             # Assign style based on depth
             if depth == 0:
@@ -1132,9 +1139,27 @@ class MindmapViewPanel(ttk.Frame):
             for child in self.hierarchy_tree.get_children(tree_item):
                 add_node_recursive(child, node_id, depth + 1)
 
-        # Process all root items
-        for root_item in self.hierarchy_tree.get_children():
-            add_node_recursive(root_item, None, 0)
+            return node_id
+
+        # If multiple root items, create a virtual root to hold them all
+        if len(root_items) > 1:
+            # Create virtual root node
+            virtual_root_style = NodeStyle(
+                shape=NodeShape.ELLIPSE,
+                fill_color="#2E5090",
+                border_color="#1a3a5c",
+                text_color="#FFFFFF",
+                font_size=16,
+                font_bold=True
+            )
+            virtual_root_id = self.mindmap.add_node("Mindmap", parent_id=None, style=virtual_root_style)
+
+            # Add all root items as children of virtual root
+            for root_item in root_items:
+                add_node_recursive(root_item, virtual_root_id, 1)
+        else:
+            # Single root item - add directly
+            add_node_recursive(root_items[0], None, 0)
 
         # Redraw
         self.mindmap.redraw()
@@ -1206,9 +1231,31 @@ class MindmapViewPanel(ttk.Frame):
         # Clear existing mindmap
         self.mindmap.clear()
 
+        # First pass: count how many root-level (level 0) items we have
+        root_count = 0
+        for line in lines:
+            if not line.strip():
+                continue
+            level = len(line) - len(line.lstrip('\t'))
+            if level == 0:
+                root_count += 1
+
         # Track parents at each level
         level_nodes = {}  # level -> node_id
         color_index = 0
+        virtual_root_id = None
+
+        # If multiple root items, create a virtual root
+        if root_count > 1:
+            virtual_root_style = NodeStyle(
+                shape=NodeShape.ELLIPSE,
+                fill_color="#2E5090",
+                border_color="#1a3a5c",
+                text_color="#FFFFFF",
+                font_size=16,
+                font_bold=True
+            )
+            virtual_root_id = self.mindmap.add_node("Mindmap", parent_id=None, style=virtual_root_style)
 
         for line in lines:
             if not line.strip():
@@ -1227,12 +1274,19 @@ class MindmapViewPanel(ttk.Frame):
                 continue
 
             # Find parent (most recent node at level - 1)
-            parent_id = None
-            if level > 0:
+            if virtual_root_id and level == 0:
+                # Multiple roots - attach to virtual root
+                parent_id = virtual_root_id
+                effective_level = 1  # Treat as level 1 for styling
+            elif level > 0:
                 parent_id = level_nodes.get(level - 1)
+                effective_level = level + (1 if virtual_root_id else 0)
+            else:
+                parent_id = None
+                effective_level = 0
 
-            # Assign style based on level
-            if level == 0:
+            # Assign style based on effective level
+            if effective_level == 0:
                 style = NodeStyle(
                     shape=NodeShape.ELLIPSE,
                     fill_color="#4472C4",
@@ -1241,7 +1295,7 @@ class MindmapViewPanel(ttk.Frame):
                     font_size=14,
                     font_bold=True
                 )
-            elif level == 1:
+            elif effective_level == 1:
                 color_set = get_color_set(color_index)
                 color_index += 1
                 style = NodeStyle(

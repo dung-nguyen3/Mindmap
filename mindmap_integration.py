@@ -489,6 +489,10 @@ class MindmapViewPanel(ttk.Frame):
         export_menu = tk.Menu(self, tearoff=0)
         export_menu.add_command(label="Export as PNG...", command=self._export_png)
         export_menu.add_command(label="Export as SVG...", command=self._export_svg)
+        export_menu.add_separator()
+        export_menu.add_command(label="Export as OPML...", command=self._export_opml)
+        export_menu.add_command(label="Export as FreeMind (.mm)...", command=self._export_freemind)
+        export_menu.add_command(label="Export as Markdown...", command=self._export_markdown)
         export_menu.add_command(label="Export as Mermaid...", command=self._export_mermaid)
         export_menu.add_separator()
         export_menu.add_command(label="Export as JSON...", command=self._save_mindmap_json)
@@ -667,56 +671,75 @@ class MindmapViewPanel(ttk.Frame):
                 if not cell_value:
                     continue
 
-                current_path.append(str(cell_value))
-                cache_key = tuple(current_path)
-
-                if cache_key in node_cache:
-                    parent_id = node_cache[cache_key]
+                # Support multiple branches: split by ; or | delimiters
+                # E.g., "a; b; c" creates 3 sibling nodes under the same parent
+                if isinstance(cell_value, str) and (';' in cell_value or '|' in cell_value):
+                    # Split by semicolon or pipe, creating multiple branches
+                    import re
+                    values = [v.strip() for v in re.split(r'[;|]', cell_value) if v.strip()]
                 else:
-                    # Create new node
-                    # Assign color based on level 1 groups
-                    if level == 0:
-                        color_set = get_color_set(color_index)
-                        color_index += 1
-                        style = NodeStyle(
-                            fill_color=f"#{color_set['header']}",
-                            border_color=f"#{color_set['header']}",
-                            font_bold=True,
-                            font_size=12
-                        )
-                    elif level == 1:
-                        # Get parent's color
-                        parent_node = self.mindmap.get_node(parent_id)
-                        if parent_node:
-                            parent_fill = parent_node.style.fill_color.lstrip('#')
-                            # Find matching color set
-                            for cs in COLOR_SETS:
-                                if cs['header'] == parent_fill:
-                                    style = NodeStyle(
-                                        fill_color=f"#{cs['main']}",
-                                        border_color=f"#{cs['header']}"
-                                    )
-                                    break
+                    values = [str(cell_value)]
+
+                # Create a node for each value (supports multi-branch)
+                # If single value, add to path; if multiple, create sibling branches
+                created_node_id = None
+                for value in values:
+                    branch_path = current_path + [value]
+                    cache_key = tuple(branch_path)
+
+                    if cache_key in node_cache:
+                        created_node_id = node_cache[cache_key]
+                    else:
+                        # Create new node
+                        # Assign color based on level 1 groups
+                        if level == 0:
+                            color_set = get_color_set(color_index)
+                            color_index += 1
+                            style = NodeStyle(
+                                fill_color=f"#{color_set['header']}",
+                                border_color=f"#{color_set['header']}",
+                                font_bold=True,
+                                font_size=12
+                            )
+                        elif level == 1:
+                            # Get parent's color
+                            parent_node = self.mindmap.get_node(parent_id)
+                            if parent_node:
+                                parent_fill = parent_node.style.fill_color.lstrip('#')
+                                # Find matching color set
+                                for cs in COLOR_SETS:
+                                    if cs['header'] == parent_fill:
+                                        style = NodeStyle(
+                                            fill_color=f"#{cs['main']}",
+                                            border_color=f"#{cs['header']}"
+                                        )
+                                        break
+                                else:
+                                    style = NodeStyle()
                             else:
                                 style = NodeStyle()
                         else:
-                            style = NodeStyle()
-                    else:
-                        style = NodeStyle(font_size=10)
+                            style = NodeStyle(font_size=10)
 
-                    # Store extra data (other columns)
-                    extra_data = {}
-                    if self.column_mapping.get('include_all', True):
-                        for i, col in enumerate(columns):
-                            if col not in level_cols and i < len(row):
-                                val = row[i]
-                                if val and (isinstance(val, str) and val.strip()):
-                                    extra_data[col] = str(val).strip()
+                        # Store extra data (other columns)
+                        extra_data = {}
+                        if self.column_mapping.get('include_all', True):
+                            for i, col in enumerate(columns):
+                                if col not in level_cols and i < len(row):
+                                    val = row[i]
+                                    if val and (isinstance(val, str) and val.strip()):
+                                        extra_data[col] = str(val).strip()
 
-                    node_id = self.mindmap.add_node(str(cell_value), parent_id=parent_id,
-                                                   style=style, extra_data=extra_data)
-                    node_cache[cache_key] = node_id
-                    parent_id = node_id
+                        node_id = self.mindmap.add_node(value, parent_id=parent_id,
+                                                       style=style, extra_data=extra_data)
+                        node_cache[cache_key] = node_id
+                        created_node_id = node_id
+
+                # For next level, use the last created node (or first if single value)
+                # Update current_path with first value for hierarchy tracking
+                if values:
+                    current_path.append(values[0])
+                    parent_id = created_node_id if created_node_id else parent_id
 
         # Update tree view
         self._update_tree_view()
@@ -1232,3 +1255,175 @@ class MindmapViewPanel(ttk.Frame):
                 messagebox.showinfo("Export", f"Mermaid markdown exported to {filepath}")
             except Exception as e:
                 messagebox.showerror("Export Error", f"Failed to export Mermaid: {e}")
+
+    def _export_opml(self):
+        """Export mindmap as OPML (Outline Processor Markup Language)
+
+        OPML is a standard XML format for outlines, widely supported by
+        mindmap applications like OmniOutliner, Workflowy, and others.
+        """
+        if not self.mindmap.nodes:
+            messagebox.showwarning("Export Warning", "No mindmap to export. Please generate a mindmap first.")
+            return
+
+        filepath = filedialog.asksaveasfilename(
+            defaultextension=".opml",
+            filetypes=[("OPML files", "*.opml"), ("XML files", "*.xml"), ("All files", "*.*")],
+            title="Export Mindmap as OPML"
+        )
+
+        if filepath:
+            try:
+                import xml.etree.ElementTree as ET
+                from xml.dom import minidom
+
+                # Create OPML structure
+                opml = ET.Element('opml', version='2.0')
+                head = ET.SubElement(opml, 'head')
+                title = ET.SubElement(head, 'title')
+                title.text = 'Mindmap Export'
+
+                body = ET.SubElement(opml, 'body')
+
+                def add_outline(parent_elem, node_id):
+                    """Recursively add outline elements"""
+                    if node_id not in self.mindmap.nodes:
+                        return
+                    node = self.mindmap.nodes[node_id]
+                    outline = ET.SubElement(parent_elem, 'outline', text=node.text)
+
+                    # Add children
+                    for child_id in node.children_ids:
+                        add_outline(outline, child_id)
+
+                # Start from root
+                if self.mindmap.root_id:
+                    add_outline(body, self.mindmap.root_id)
+
+                # Pretty print XML
+                rough_string = ET.tostring(opml, encoding='unicode')
+                reparsed = minidom.parseString(rough_string)
+                pretty_xml = reparsed.toprettyxml(indent='  ')
+
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    f.write(pretty_xml)
+
+                messagebox.showinfo("Export", f"OPML exported to {filepath}")
+            except Exception as e:
+                messagebox.showerror("Export Error", f"Failed to export OPML: {e}")
+
+    def _export_freemind(self):
+        """Export mindmap as FreeMind (.mm) format
+
+        FreeMind is a popular open-source mind mapping application.
+        The .mm format is XML-based and supported by many other apps.
+        """
+        if not self.mindmap.nodes:
+            messagebox.showwarning("Export Warning", "No mindmap to export. Please generate a mindmap first.")
+            return
+
+        filepath = filedialog.asksaveasfilename(
+            defaultextension=".mm",
+            filetypes=[("FreeMind files", "*.mm"), ("XML files", "*.xml"), ("All files", "*.*")],
+            title="Export Mindmap as FreeMind"
+        )
+
+        if filepath:
+            try:
+                import xml.etree.ElementTree as ET
+                from xml.dom import minidom
+
+                # Create FreeMind map structure
+                map_elem = ET.Element('map', version='1.0.1')
+
+                def add_node(parent_elem, node_id, position=None):
+                    """Recursively add node elements"""
+                    if node_id not in self.mindmap.nodes:
+                        return
+                    node = self.mindmap.nodes[node_id]
+
+                    # Create node element
+                    attrs = {'TEXT': node.text}
+                    if position:
+                        attrs['POSITION'] = position
+
+                    # Add color if not default
+                    fill = node.style.fill_color.lstrip('#')
+                    if fill and fill != 'E3F2FD':
+                        attrs['BACKGROUND_COLOR'] = f'#{fill}'
+
+                    node_elem = ET.SubElement(parent_elem, 'node', **attrs)
+
+                    # Add children with alternating positions for root children
+                    for i, child_id in enumerate(node.children_ids):
+                        if node_id == self.mindmap.root_id:
+                            # Alternate left/right for root children
+                            child_position = 'right' if i % 2 == 0 else 'left'
+                            add_node(node_elem, child_id, child_position)
+                        else:
+                            add_node(node_elem, child_id)
+
+                # Start from root
+                if self.mindmap.root_id:
+                    add_node(map_elem, self.mindmap.root_id)
+
+                # Pretty print XML
+                rough_string = ET.tostring(map_elem, encoding='unicode')
+                reparsed = minidom.parseString(rough_string)
+                pretty_xml = reparsed.toprettyxml(indent='  ')
+
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    f.write(pretty_xml)
+
+                messagebox.showinfo("Export", f"FreeMind file exported to {filepath}")
+            except Exception as e:
+                messagebox.showerror("Export Error", f"Failed to export FreeMind: {e}")
+
+    def _export_markdown(self):
+        """Export mindmap as Markdown outline
+
+        Creates a hierarchical bullet-point outline that can be
+        viewed in any Markdown editor or converted to other formats.
+        """
+        if not self.mindmap.nodes:
+            messagebox.showwarning("Export Warning", "No mindmap to export. Please generate a mindmap first.")
+            return
+
+        filepath = filedialog.asksaveasfilename(
+            defaultextension=".md",
+            filetypes=[("Markdown files", "*.md"), ("Text files", "*.txt"), ("All files", "*.*")],
+            title="Export Mindmap as Markdown Outline"
+        )
+
+        if filepath:
+            try:
+                lines = []
+
+                def add_node(node_id, depth=0):
+                    """Recursively add markdown lines"""
+                    if node_id not in self.mindmap.nodes:
+                        return
+                    node = self.mindmap.nodes[node_id]
+
+                    # Use heading for root, bullets for others
+                    if depth == 0:
+                        lines.append(f'# {node.text}\n')
+                    else:
+                        indent = '  ' * (depth - 1)
+                        lines.append(f'{indent}- {node.text}')
+
+                    # Add children
+                    for child_id in node.children_ids:
+                        add_node(child_id, depth + 1)
+
+                # Start from root
+                if self.mindmap.root_id:
+                    add_node(self.mindmap.root_id)
+
+                content = '\n'.join(lines)
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    f.write(content)
+
+                messagebox.showinfo("Export", f"Markdown outline exported to {filepath}")
+            except Exception as e:
+                messagebox.showerror("Export Error", f"Failed to export Markdown: {e}")

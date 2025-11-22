@@ -849,7 +849,11 @@ class MindmapCanvas(tk.Canvas):
                 current_y += child_height
 
     def _layout_four_way_balanced(self):
-        """Layout with root in center, children split into 4 quadrants (org chart style)"""
+        """Layout with root in center, children distributed across 4 quadrants evenly.
+
+        Handles any number of children by distributing them round-robin across quadrants
+        to prevent cramping. Each quadrant stacks children vertically with proper spacing.
+        """
         if self.root_id not in self.nodes:
             return
 
@@ -860,49 +864,56 @@ class MindmapCanvas(tk.Canvas):
         if not root.children_ids:
             return
 
-        # Split children into 4 groups: up-left, up-right, down-left, down-right
         n = len(root.children_ids)
-        quarter = max(1, n // 4)
 
-        up_left = root.children_ids[:quarter]
-        up_right = root.children_ids[quarter:quarter*2]
-        down_left = root.children_ids[quarter*2:quarter*3]
-        down_right = root.children_ids[quarter*3:]
+        # Distribute children evenly across 4 quadrants using round-robin
+        # This ensures balanced distribution regardless of child count
+        quadrants = [[], [], [], []]  # up-right, down-right, down-left, up-left
+        for i, child_id in enumerate(root.children_ids):
+            quadrants[i % 4].append(child_id)
 
-        # If odd distribution, balance it out
-        if n <= 2:
-            up_right = root.children_ids[:n//2] if n > 0 else []
-            down_right = root.children_ids[n//2:] if n > 1 else []
-            up_left = down_left = []
-        elif n <= 4:
-            up_left = [root.children_ids[0]] if n > 0 else []
-            up_right = [root.children_ids[1]] if n > 1 else []
-            down_left = [root.children_ids[2]] if n > 2 else []
-            down_right = [root.children_ids[3]] if n > 3 else []
+        up_right = quadrants[0]   # Quadrant 1
+        down_right = quadrants[1]  # Quadrant 4
+        down_left = quadrants[2]   # Quadrant 3
+        up_left = quadrants[3]     # Quadrant 2
 
-        # Layout up-left quadrant
+        # Calculate dynamic spacing based on number of items in each quadrant
+        # to prevent cramping with many children
+        def get_spacing_for_count(count):
+            if count <= 3:
+                return self.v_spacing
+            elif count <= 6:
+                return self.v_spacing * 0.8
+            else:
+                return max(self.v_spacing * 0.6, 40)  # Minimum 40px spacing
+
+        # Layout up-left quadrant (spreading upward and left)
+        v_space = get_spacing_for_count(len(up_left))
         for i, child_id in enumerate(up_left):
             self._layout_subtree_direction(child_id,
                                            -self.h_spacing,
-                                           -self.v_spacing * (i + 1), 'left')
+                                           -v_space * (i + 1), 'left')
 
-        # Layout up-right quadrant
+        # Layout up-right quadrant (spreading upward and right)
+        v_space = get_spacing_for_count(len(up_right))
         for i, child_id in enumerate(up_right):
             self._layout_subtree_direction(child_id,
                                            self.h_spacing,
-                                           -self.v_spacing * (i + 1), 'right')
+                                           -v_space * (i + 1), 'right')
 
-        # Layout down-left quadrant
+        # Layout down-left quadrant (spreading downward and left)
+        v_space = get_spacing_for_count(len(down_left))
         for i, child_id in enumerate(down_left):
             self._layout_subtree_direction(child_id,
                                            -self.h_spacing,
-                                           self.v_spacing * (i + 1), 'left')
+                                           v_space * (i + 1), 'left')
 
-        # Layout down-right quadrant
+        # Layout down-right quadrant (spreading downward and right)
+        v_space = get_spacing_for_count(len(down_right))
         for i, child_id in enumerate(down_right):
             self._layout_subtree_direction(child_id,
                                            self.h_spacing,
-                                           self.v_spacing * (i + 1), 'right')
+                                           v_space * (i + 1), 'right')
 
     def _layout_subtree_direction(self, node_id: str, x: float, y: float, direction: str):
         """Layout a subtree in a specific direction"""

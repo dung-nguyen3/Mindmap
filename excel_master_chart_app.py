@@ -265,6 +265,9 @@ class ExcelMasterChartApp:
         self.unsaved_changes = False
         self.last_save_time = None
 
+        # Mindmap auto-sync debounce timer
+        self._mindmap_sync_timer = None
+
         # Recent files
         self.recent_files_path = Path.home() / ".excel_master_chart_recent.json"
         self.recent_files = self.load_recent_files()
@@ -1883,6 +1886,26 @@ class ExcelMasterChartApp:
 
         # Always auto-apply colors after cell modification (real-time color update)
         self.apply_live_colors()
+
+        # Auto-sync to mindmap with debouncing (300ms delay)
+        self._schedule_mindmap_sync()
+
+    def _schedule_mindmap_sync(self):
+        """Schedule mindmap sync with debouncing to avoid excessive updates while typing"""
+        # Cancel any pending sync
+        if self._mindmap_sync_timer:
+            self.root.after_cancel(self._mindmap_sync_timer)
+
+        # Schedule new sync after 300ms delay
+        self._mindmap_sync_timer = self.root.after(300, self._sync_mindmap)
+
+    def _sync_mindmap(self):
+        """Sync data to mindmap if it has column mapping set"""
+        self._mindmap_sync_timer = None
+        if hasattr(self, 'mindmap_panel') and self.mindmap_panel:
+            # Only sync if column mapping is already configured
+            if self.mindmap_panel.column_mapping:
+                self.mindmap_panel._refresh_mindmap()
 
     def check_crash_recovery(self):
         """Check for auto-save file and offer recovery"""

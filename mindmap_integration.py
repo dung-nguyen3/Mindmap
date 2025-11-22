@@ -578,135 +578,249 @@ class MindmapViewPanel(ttk.Frame):
         self._create_status_bar()
 
     def _create_toolbar(self):
-        """Create the mindmap toolbar"""
+        """Create the mindmap toolbar - compact design with dropdowns"""
         toolbar = ttk.Frame(self)
         toolbar.grid(row=0, column=0, sticky='ew', padx=5, pady=5)
 
+        # Apply button (most important - first)
+        ttk.Button(toolbar, text="Apply", command=self._apply_mindmap).pack(side=tk.LEFT, padx=(0, 10))
+
         # Layout dropdown
-        ttk.Label(toolbar, text="Layout:").pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(toolbar, text="Layout:").pack(side=tk.LEFT, padx=(0, 3))
         self.layout_var = tk.StringVar(value="tree_right")
-        layout_combo = ttk.Combobox(toolbar, textvariable=self.layout_var, state="readonly", width=18)
+        layout_combo = ttk.Combobox(toolbar, textvariable=self.layout_var, state="readonly", width=15)
         layout_combo['values'] = [
             "Tree Right", "Tree Left", "Tree Down", "Tree Up",
             "Vertical Balanced", "Horizontal Balanced", "Org Chart",
-            "Vertical Custom", "Horizontal Custom",
             "Radial", "Free Form"
         ]
         layout_combo.current(0)
-        layout_combo.pack(side=tk.LEFT, padx=(0, 15))
+        layout_combo.pack(side=tk.LEFT, padx=(0, 10))
         layout_combo.bind('<<ComboboxSelected>>', self._on_layout_change)
 
-        # Line style dropdown
-        ttk.Label(toolbar, text="Lines:").pack(side=tk.LEFT, padx=(0, 5))
+        # Style dropdown (combines Lines and Shape)
+        style_menu = tk.Menu(self, tearoff=0)
+
+        # Lines submenu
+        lines_menu = tk.Menu(style_menu, tearoff=0)
         self.line_var = tk.StringVar(value="curved")
-        line_combo = ttk.Combobox(toolbar, textvariable=self.line_var, state="readonly", width=12)
-        line_combo['values'] = ["Straight", "Curved", "Orthogonal", "Tapered"]
-        line_combo.current(1)
-        line_combo.pack(side=tk.LEFT, padx=(0, 15))
-        line_combo.bind('<<ComboboxSelected>>', self._on_line_change)
+        for line in ["Straight", "Curved", "Orthogonal", "Tapered"]:
+            lines_menu.add_radiobutton(label=line, variable=self.line_var, value=line.lower(),
+                                       command=self._on_line_change)
+        style_menu.add_cascade(label="Line Style", menu=lines_menu)
 
-        # Shape dropdown
-        ttk.Label(toolbar, text="Shape:").pack(side=tk.LEFT, padx=(0, 5))
-        self.shape_var = tk.StringVar(value="rounded_rectangle")
-        shape_combo = ttk.Combobox(toolbar, textvariable=self.shape_var, state="readonly", width=14)
-        shape_combo['values'] = ["Rectangle", "Rounded", "Ellipse", "Pill", "Diamond", "Hexagon"]
-        shape_combo.current(1)
-        shape_combo.pack(side=tk.LEFT, padx=(0, 15))
-        shape_combo.bind('<<ComboboxSelected>>', self._on_shape_change)
+        # Shapes submenu
+        shapes_menu = tk.Menu(style_menu, tearoff=0)
+        self.shape_var = tk.StringVar(value="rounded")
+        for shape in ["Rectangle", "Rounded", "Ellipse", "Pill", "Diamond", "Hexagon"]:
+            shapes_menu.add_radiobutton(label=shape, variable=self.shape_var, value=shape.lower(),
+                                        command=self._on_shape_change)
+        style_menu.add_cascade(label="Node Shape", menu=shapes_menu)
 
-        # Separator
-        ttk.Separator(toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=10)
+        style_btn = ttk.Menubutton(toolbar, text="Style")
+        style_btn['menu'] = style_menu
+        style_btn.pack(side=tk.LEFT, padx=(0, 10))
 
-        # View buttons
-        ttk.Button(toolbar, text="Fit All", command=self._fit_all).pack(side=tk.LEFT, padx=2)
-        ttk.Button(toolbar, text="Center", command=self._center_root).pack(side=tk.LEFT, padx=2)
-
-        # Zoom controls
-        ttk.Label(toolbar, text="Zoom:").pack(side=tk.LEFT, padx=(15, 5))
-        ttk.Button(toolbar, text="-", width=3, command=self._zoom_out).pack(side=tk.LEFT)
-
-        # Zoom slider
+        # Zoom controls (compact)
+        ttk.Label(toolbar, text="Zoom:").pack(side=tk.LEFT, padx=(0, 3))
+        ttk.Button(toolbar, text="-", width=2, command=self._zoom_out).pack(side=tk.LEFT)
         self.zoom_var = tk.IntVar(value=100)
         self.zoom_slider = ttk.Scale(toolbar, from_=25, to=200, orient=tk.HORIZONTAL,
-                                      variable=self.zoom_var, length=80,
+                                      variable=self.zoom_var, length=60,
                                       command=self._on_zoom_slider)
-        self.zoom_slider.pack(side=tk.LEFT, padx=2)
-
-        self.zoom_label = ttk.Label(toolbar, text="100%", width=5)
+        self.zoom_slider.pack(side=tk.LEFT)
+        self.zoom_label = ttk.Label(toolbar, text="100%", width=4)
         self.zoom_label.pack(side=tk.LEFT)
-        ttk.Button(toolbar, text="+", width=3, command=self._zoom_in).pack(side=tk.LEFT)
-        ttk.Button(toolbar, text="Reset", width=5, command=self._zoom_reset).pack(side=tk.LEFT, padx=2)
+        ttk.Button(toolbar, text="+", width=2, command=self._zoom_in).pack(side=tk.LEFT, padx=(0, 10))
 
-        # Separator
-        ttk.Separator(toolbar, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=10)
+        # View dropdown
+        view_menu = tk.Menu(self, tearoff=0)
+        view_menu.add_command(label="Fit All", command=self._fit_all)
+        view_menu.add_command(label="Center on Root", command=self._center_root)
+        view_menu.add_command(label="Reset Zoom", command=self._zoom_reset)
 
-        # Mapping button
-        ttk.Button(toolbar, text="Column Mapping...", command=self._show_mapping_dialog).pack(side=tk.LEFT, padx=2)
+        view_btn = ttk.Menubutton(toolbar, text="View")
+        view_btn['menu'] = view_menu
+        view_btn.pack(side=tk.LEFT, padx=(0, 5))
 
-        # Apply button - quick apply with current or default mapping
-        ttk.Button(toolbar, text="Apply", command=self._apply_mindmap).pack(side=tk.LEFT, padx=2)
+        # More dropdown (less common actions)
+        more_menu = tk.Menu(self, tearoff=0)
+        more_menu.add_command(label="Column Mapping...", command=self._show_mapping_dialog)
+        more_menu.add_command(label="Refresh from Excel", command=self._refresh_mindmap)
+        more_menu.add_separator()
+        more_menu.add_command(label="Save Mindmap...", command=self._save_mindmap_json)
+        more_menu.add_command(label="Load Mindmap...", command=self._load_mindmap_json)
 
-        # Refresh button
-        ttk.Button(toolbar, text="Refresh", command=self._refresh_mindmap).pack(side=tk.LEFT, padx=2)
+        # Export submenu inside More
+        export_submenu = tk.Menu(more_menu, tearoff=0)
+        export_submenu.add_command(label="PNG Image...", command=self._export_png)
+        export_submenu.add_command(label="SVG Vector...", command=self._export_svg)
+        export_submenu.add_separator()
+        export_submenu.add_command(label="OPML Outline...", command=self._export_opml)
+        export_submenu.add_command(label="FreeMind (.mm)...", command=self._export_freemind)
+        export_submenu.add_command(label="Markdown...", command=self._export_markdown)
+        export_submenu.add_command(label="Mermaid...", command=self._export_mermaid)
+        export_submenu.add_separator()
+        export_submenu.add_command(label="JSON Data...", command=self._save_mindmap_json)
+        more_menu.add_cascade(label="Export", menu=export_submenu)
 
-        # File menu (save/load mindmap)
-        file_menu = tk.Menu(self, tearoff=0)
-        file_menu.add_command(label="Save Mindmap...", command=self._save_mindmap_json)
-        file_menu.add_command(label="Load Mindmap...", command=self._load_mindmap_json)
-
-        file_btn = ttk.Menubutton(toolbar, text="File")
-        file_btn['menu'] = file_menu
-        file_btn.pack(side=tk.RIGHT, padx=2)
-
-        # Export dropdown
-        export_menu = tk.Menu(self, tearoff=0)
-        export_menu.add_command(label="Export as PNG...", command=self._export_png)
-        export_menu.add_command(label="Export as SVG...", command=self._export_svg)
-        export_menu.add_separator()
-        export_menu.add_command(label="Export as OPML...", command=self._export_opml)
-        export_menu.add_command(label="Export as FreeMind (.mm)...", command=self._export_freemind)
-        export_menu.add_command(label="Export as Markdown...", command=self._export_markdown)
-        export_menu.add_command(label="Export as Mermaid...", command=self._export_mermaid)
-        export_menu.add_separator()
-        export_menu.add_command(label="Export as JSON...", command=self._save_mindmap_json)
-
-        export_btn = ttk.Menubutton(toolbar, text="Export")
-        export_btn['menu'] = export_menu
-        export_btn.pack(side=tk.RIGHT, padx=2)
+        more_btn = ttk.Menubutton(toolbar, text="More")
+        more_btn['menu'] = more_menu
+        more_btn.pack(side=tk.LEFT)
 
     def _create_excel_panel(self):
-        """Create the left panel with Excel data"""
+        """Create the left panel with editable outline
+
+        Users can type hierarchy using Tab indentation:
+        - Enter = new line (sibling)
+        - Tab = indent (become child)
+        - Shift+Tab = outdent (become parent's sibling)
+        """
         left_frame = ttk.Frame(self.paned)
 
-        # Header
+        # Header with instructions
         header = ttk.Frame(left_frame)
         header.pack(fill=tk.X, pady=(0, 5))
-        ttk.Label(header, text="Excel Data", font=("Calibri", 11, "bold")).pack(side=tk.LEFT)
+        ttk.Label(header, text="Outline", font=("Calibri", 11, "bold")).pack(side=tk.LEFT)
+        ttk.Label(header, text="(Tab to indent, Shift+Tab to outdent)",
+                 font=("Calibri", 9), foreground="gray").pack(side=tk.LEFT, padx=(10, 0))
 
-        # Treeview for data display (editable)
-        tree_frame = ttk.Frame(left_frame)
-        tree_frame.pack(fill=tk.BOTH, expand=True)
+        # Text widget for outline editing
+        text_frame = ttk.Frame(left_frame)
+        text_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Scrollbars
-        vsb = ttk.Scrollbar(tree_frame, orient="vertical")
-        hsb = ttk.Scrollbar(tree_frame, orient="horizontal")
+        # Scrollbar
+        vsb = ttk.Scrollbar(text_frame, orient="vertical")
+        vsb.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.data_tree = ttk.Treeview(tree_frame, yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+        self.outline_text = tk.Text(text_frame, wrap=tk.NONE, font=("Consolas", 11),
+                                    yscrollcommand=vsb.set, undo=True, tabs=('2c',))
+        self.outline_text.pack(fill=tk.BOTH, expand=True)
+        vsb.config(command=self.outline_text.yview)
 
-        vsb.config(command=self.data_tree.yview)
-        hsb.config(command=self.data_tree.xview)
+        # Default placeholder text
+        self.outline_text.insert('1.0', "Root\n\tChild 1\n\t\tGrandchild\n\tChild 2\n")
 
-        self.data_tree.grid(row=0, column=0, sticky='nsew')
-        vsb.grid(row=0, column=1, sticky='ns')
-        hsb.grid(row=1, column=0, sticky='ew')
+        # Bind events for outline editing
+        self.outline_text.bind('<KeyRelease>', self._on_outline_change)
+        self.outline_text.bind('<Tab>', self._on_tab_press)
+        self.outline_text.bind('<Shift-Tab>', self._on_shift_tab_press)
 
-        tree_frame.columnconfigure(0, weight=1)
-        tree_frame.rowconfigure(0, weight=1)
+        # Auto-sync timer
+        self._outline_sync_timer = None
 
-        # Bind double-click for editing
-        self.data_tree.bind('<Double-1>', self._on_tree_double_click)
+        # Keep reference to data_tree for backward compatibility (may be None)
+        self.data_tree = None
 
-        self.paned.add(left_frame, minsize=200, width=350)
+        self.paned.add(left_frame, minsize=200, width=300)
+
+    def _on_tab_press(self, event):
+        """Handle Tab key - insert tab character"""
+        self.outline_text.insert(tk.INSERT, '\t')
+        self._schedule_outline_sync()
+        return 'break'  # Prevent default Tab behavior
+
+    def _on_shift_tab_press(self, event):
+        """Handle Shift+Tab - remove one level of indentation"""
+        # Get current line
+        line_start = self.outline_text.index(f"{tk.INSERT} linestart")
+        line_text = self.outline_text.get(line_start, f"{line_start} lineend")
+
+        # Remove leading tab if present
+        if line_text.startswith('\t'):
+            self.outline_text.delete(line_start, f"{line_start}+1c")
+
+        self._schedule_outline_sync()
+        return 'break'
+
+    def _on_outline_change(self, event=None):
+        """Handle text changes in outline"""
+        # Schedule sync with debounce
+        self._schedule_outline_sync()
+
+    def _schedule_outline_sync(self):
+        """Schedule outline sync with debouncing"""
+        if self._outline_sync_timer:
+            self.after_cancel(self._outline_sync_timer)
+        self._outline_sync_timer = self.after(500, self._sync_outline_to_mindmap)
+
+    def _sync_outline_to_mindmap(self):
+        """Parse outline text and create mindmap"""
+        self._outline_sync_timer = None
+
+        text = self.outline_text.get('1.0', tk.END).strip()
+        if not text:
+            return
+
+        # Parse outline into hierarchy
+        lines = text.split('\n')
+        if not lines:
+            return
+
+        # Clear existing mindmap
+        self.mindmap.clear()
+
+        # Track parents at each level
+        level_nodes = {}  # level -> node_id
+        color_index = 0
+
+        for line in lines:
+            if not line.strip():
+                continue
+
+            # Count leading tabs to determine level
+            level = 0
+            for char in line:
+                if char == '\t':
+                    level += 1
+                else:
+                    break
+
+            node_text = line.strip()
+            if not node_text:
+                continue
+
+            # Find parent (most recent node at level - 1)
+            parent_id = None
+            if level > 0:
+                parent_id = level_nodes.get(level - 1)
+
+            # Assign style based on level
+            if level == 0:
+                style = NodeStyle(
+                    shape=NodeShape.ELLIPSE,
+                    fill_color="#4472C4",
+                    border_color="#2E5090",
+                    text_color="#FFFFFF",
+                    font_size=14,
+                    font_bold=True
+                )
+            elif level == 1:
+                color_set = get_color_set(color_index)
+                color_index += 1
+                style = NodeStyle(
+                    fill_color=f"#{color_set['header']}",
+                    border_color=f"#{color_set['header']}",
+                    font_bold=True,
+                    font_size=12
+                )
+            else:
+                style = NodeStyle(font_size=10)
+
+            # Create node
+            node_id = self.mindmap.add_node(node_text, parent_id=parent_id, style=style)
+            level_nodes[level] = node_id
+
+            # Clear deeper levels
+            for deeper in list(level_nodes.keys()):
+                if deeper > level:
+                    del level_nodes[deeper]
+
+        # Redraw
+        self.mindmap.redraw()
+        self.mindmap.fit_all()
+        self._update_status()
+        self.sync_status_label.config(text="Synced", foreground="green")
 
     def _create_mindmap_panel(self):
         """Create the right panel with mindmap canvas"""
@@ -1401,45 +1515,55 @@ class MindmapViewPanel(ttk.Frame):
         self._refresh_mindmap()
 
     def _refresh_mindmap(self):
-        """Refresh the mindmap from Excel data"""
-        if not self.column_mapping:
-            self._show_mapping_dialog()
+        """Refresh the mindmap from outline or Excel data"""
+        # Primary: use outline text if available
+        if hasattr(self, 'outline_text') and self.outline_text:
+            self._sync_outline_to_mindmap()
+        # Fallback: use Excel data with column mapping
+        elif self.column_mapping:
+            self.load_from_excel_data()
+            self.sync_status_label.config(text="Synced", foreground="green")
         else:
+            self._show_mapping_dialog()
+
+    def _apply_mindmap(self):
+        """Apply mindmap from outline text
+
+        This is the main way to generate mindmap - from the outline panel.
+        """
+        if hasattr(self, 'outline_text') and self.outline_text:
+            self._sync_outline_to_mindmap()
+        else:
+            # Fallback to Excel data
+            columns = self.get_columns()
+            data = self.get_excel_data()
+
+            if not columns or not data:
+                messagebox.showwarning("No Data", "Please type an outline in the left panel.")
+                return
+
+            if not self.column_mapping:
+                num_levels = min(4, len(columns))
+                self.column_mapping = {
+                    'mode': 'by_columns',
+                    'levels': columns[:num_levels],
+                    'include_all': True,
+                    'color_by_group': True
+                }
+
             self.load_from_excel_data()
             self.sync_status_label.config(text="Synced", foreground="green")
 
-    def _apply_mindmap(self):
-        """Apply mindmap with current or default mapping
-
-        If no mapping exists, creates a default mapping using the first 2-4 columns.
-        This allows quick generation without going through the mapping dialog.
-        """
-        columns = self.get_columns()
-        data = self.get_excel_data()
-
-        if not columns or not data:
-            messagebox.showwarning("No Data", "Please add data in the Excel View first.")
-            return
-
-        # If no mapping exists, create a default one using first columns
-        if not self.column_mapping:
-            # Use first 2-4 columns as hierarchy levels
-            num_levels = min(4, len(columns))
-            default_levels = columns[:num_levels]
-
-            self.column_mapping = {
-                'mode': 'by_columns',
-                'levels': default_levels,
-                'include_all': True,
-                'color_by_group': True
-            }
-
-        # Apply the mapping
-        self.load_from_excel_data()
-        self.sync_status_label.config(text="Synced", foreground="green")
-
     def auto_apply_if_data(self):
-        """Auto-apply mindmap if data exists (called when switching to view)"""
+        """Auto-apply mindmap when switching to view"""
+        # Use outline text if available
+        if hasattr(self, 'outline_text') and self.outline_text:
+            text = self.outline_text.get('1.0', tk.END).strip()
+            if text:
+                self._sync_outline_to_mindmap()
+                return
+
+        # Fallback to Excel data
         columns = self.get_columns()
         data = self.get_excel_data()
 

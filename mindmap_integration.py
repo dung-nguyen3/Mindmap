@@ -829,6 +829,13 @@ class MindmapViewPanel(ttk.Frame):
         columns = self.get_columns()
         data = self.get_excel_data()
 
+        # Debug output
+        print(f"[DEBUG] Columns: {columns}")
+        print(f"[DEBUG] Total rows: {len(data) if data else 0}")
+        if data:
+            for i, row in enumerate(data[:10]):
+                print(f"[DEBUG] Row {i}: {row[:4] if len(row) > 4 else row}")
+
         if not columns or not data:
             messagebox.showwarning("No Data", "Please load data in Excel View first.")
             return
@@ -842,6 +849,8 @@ class MindmapViewPanel(ttk.Frame):
         for col in columns:
             if col in self.column_vars and self.column_vars[col].get():
                 selected_cols.append(col)
+
+        print(f"[DEBUG] Selected columns: {selected_cols}")
 
         if not selected_cols:
             messagebox.showwarning("No Columns", "Please select at least one column.")

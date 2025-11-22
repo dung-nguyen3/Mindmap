@@ -829,13 +829,6 @@ class MindmapViewPanel(ttk.Frame):
         columns = self.get_columns()
         data = self.get_excel_data()
 
-        # Debug output
-        print(f"[DEBUG] Columns: {columns}")
-        print(f"[DEBUG] Total rows: {len(data) if data else 0}")
-        if data:
-            for i, row in enumerate(data[:10]):
-                print(f"[DEBUG] Row {i}: {row[:4] if len(row) > 4 else row}")
-
         if not columns or not data:
             messagebox.showwarning("No Data", "Please load data in Excel View first.")
             return
@@ -850,10 +843,20 @@ class MindmapViewPanel(ttk.Frame):
             if col in self.column_vars and self.column_vars[col].get():
                 selected_cols.append(col)
 
-        print(f"[DEBUG] Selected columns: {selected_cols}")
-
         if not selected_cols:
             messagebox.showwarning("No Columns", "Please select at least one column.")
+            return
+
+        # Get column indices once
+        col_indices = {}
+        for col in selected_cols:
+            try:
+                col_indices[col] = columns.index(col)
+            except ValueError:
+                pass
+
+        if not col_indices:
+            messagebox.showwarning("Error", "Could not find selected columns in data.")
             return
 
         # Clear existing tree
@@ -863,51 +866,62 @@ class MindmapViewPanel(ttk.Frame):
         # Build hierarchy from Excel rows
         # Each row creates a path: col1_value -> col2_value -> col3_value -> ...
         node_cache = {}  # path_tuple -> tree_item_id
+        rows_processed = 0
+        nodes_created = 0
 
-        for row in data:
+        for row_idx, row in enumerate(data):
             if not row:
                 continue
 
-            # Skip empty rows
-            has_content = False
+            # Skip rows that are completely empty
+            row_has_data = False
             for cell in row:
-                if cell is not None and str(cell).strip():
-                    has_content = True
-                    break
-            if not has_content:
+                if cell is not None:
+                    cell_str = str(cell).strip()
+                    if cell_str:
+                        row_has_data = True
+                        break
+
+            if not row_has_data:
                 continue
 
-            parent_id = ''  # Root
+            rows_processed += 1
+            parent_id = ''  # Start at root for each row
             current_path = []
 
             for col in selected_cols:
-                try:
-                    col_idx = columns.index(col)
-                except ValueError:
-                    continue
-
-                if col_idx >= len(row):
+                col_idx = col_indices.get(col, -1)
+                if col_idx < 0 or col_idx >= len(row):
                     continue
 
                 cell_value = row[col_idx]
                 if cell_value is None:
                     continue
-                cell_value = str(cell_value).strip()
-                if not cell_value:
+
+                # Convert to string and strip whitespace
+                cell_str = str(cell_value).strip()
+                if not cell_str:
                     continue
 
-                current_path.append(cell_value)
+                # Build the path for this node
+                current_path.append(cell_str)
                 path_key = tuple(current_path)
 
+                # Create node if it doesn't exist
                 if path_key not in node_cache:
-                    # Create new node
-                    item_id = self.hierarchy_tree.insert(parent_id, 'end', text=cell_value, open=True)
+                    item_id = self.hierarchy_tree.insert(parent_id, 'end', text=cell_str, open=True)
                     node_cache[path_key] = item_id
+                    nodes_created += 1
 
+                # Move to this node as parent for next level
                 parent_id = node_cache[path_key]
 
-        # Sync to mindmap
-        self._sync_tree_to_mindmap()
+        # Show summary
+        if nodes_created == 0:
+            messagebox.showinfo("Result", f"No hierarchy created.\nRows checked: {len(data)}\nRows with data: {rows_processed}\nSelected columns: {selected_cols}")
+        else:
+            # Sync to mindmap
+            self._sync_tree_to_mindmap()
 
     # ========================================================================
     # TREE KEYBOARD CONTROLS

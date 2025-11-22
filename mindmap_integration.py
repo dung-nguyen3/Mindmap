@@ -669,27 +669,114 @@ class MindmapViewPanel(ttk.Frame):
         more_btn.pack(side=tk.LEFT)
 
     def _create_excel_panel(self):
-        """Create the left panel with editable outline
+        """Create the left panel with tabbed interface: Excel Data + Outline
 
-        Users can type hierarchy using Tab indentation:
-        - Enter = new line (sibling)
-        - Tab = indent (become child)
-        - Shift+Tab = outdent (become parent's sibling)
+        Excel Tab: Column selector + hierarchical treeview from Excel data
+        Outline Tab: Free-form text editor with Tab indentation
         """
         left_frame = ttk.Frame(self.paned)
 
-        # Header with instructions
-        header = ttk.Frame(left_frame)
-        header.pack(fill=tk.X, pady=(0, 5))
-        ttk.Label(header, text="Outline", font=("Calibri", 11, "bold")).pack(side=tk.LEFT)
-        ttk.Label(header, text="(Tab to indent, Shift+Tab to outdent)",
-                 font=("Calibri", 9), foreground="gray").pack(side=tk.LEFT, padx=(10, 0))
+        # Create notebook for tabs
+        self.left_notebook = ttk.Notebook(left_frame)
+        self.left_notebook.pack(fill=tk.BOTH, expand=True)
 
-        # Text widget for outline editing
-        text_frame = ttk.Frame(left_frame)
-        text_frame.pack(fill=tk.BOTH, expand=True)
+        # Tab 1: Excel Data
+        excel_tab = ttk.Frame(self.left_notebook)
+        self.left_notebook.add(excel_tab, text="Excel")
+        self._create_excel_tab(excel_tab)
 
-        # Scrollbar
+        # Tab 2: Outline
+        outline_tab = ttk.Frame(self.left_notebook)
+        self.left_notebook.add(outline_tab, text="Outline")
+        self._create_outline_tab(outline_tab)
+
+        # Auto-sync timer
+        self._outline_sync_timer = None
+        self._tree_sync_timer = None
+
+        self.paned.add(left_frame, minsize=200, width=350)
+
+    def _create_excel_tab(self, parent):
+        """Create Excel data tab with column selector and hierarchy tree"""
+        # Column selector frame
+        selector_frame = ttk.LabelFrame(parent, text="Select Columns for Hierarchy", padding=5)
+        selector_frame.pack(fill=tk.X, padx=5, pady=5)
+
+        # Column checkboxes (will be populated when data loads)
+        self.column_vars = {}  # column_name -> BooleanVar
+        self.column_frame = ttk.Frame(selector_frame)
+        self.column_frame.pack(fill=tk.X)
+
+        # Generate button
+        btn_frame = ttk.Frame(selector_frame)
+        btn_frame.pack(fill=tk.X, pady=(5, 0))
+        ttk.Button(btn_frame, text="Generate Hierarchy", command=self._generate_from_excel).pack(side=tk.LEFT)
+        ttk.Button(btn_frame, text="Select All", command=self._select_all_columns).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Clear All", command=self._clear_all_columns).pack(side=tk.LEFT)
+
+        # Instructions
+        ttk.Label(parent, text="Tab=indent | Backspace=outdent | Enter=new sibling | F2=edit",
+                 font=("Calibri", 9), foreground="gray").pack(anchor=tk.W, padx=5)
+
+        # Hierarchy treeview
+        tree_frame = ttk.Frame(parent)
+        tree_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        vsb = ttk.Scrollbar(tree_frame, orient="vertical")
+        hsb = ttk.Scrollbar(tree_frame, orient="horizontal")
+
+        self.hierarchy_tree = ttk.Treeview(tree_frame, selectmode='browse',
+                                           yscrollcommand=vsb.set, xscrollcommand=hsb.set)
+        self.hierarchy_tree.heading('#0', text='Hierarchy', anchor='w')
+        self.hierarchy_tree.column('#0', width=300, stretch=True)
+
+        vsb.config(command=self.hierarchy_tree.yview)
+        hsb.config(command=self.hierarchy_tree.xview)
+
+        self.hierarchy_tree.grid(row=0, column=0, sticky='nsew')
+        vsb.grid(row=0, column=1, sticky='ns')
+        hsb.grid(row=1, column=0, sticky='ew')
+
+        tree_frame.columnconfigure(0, weight=1)
+        tree_frame.rowconfigure(0, weight=1)
+
+        # Bind keyboard events
+        self.hierarchy_tree.bind('<Tab>', self._tree_indent)
+        self.hierarchy_tree.bind('<Shift-Tab>', self._tree_outdent)
+        self.hierarchy_tree.bind('<BackSpace>', self._tree_backspace)
+        self.hierarchy_tree.bind('<Return>', self._tree_new_sibling)
+        self.hierarchy_tree.bind('<F2>', self._tree_edit_node)
+        self.hierarchy_tree.bind('<Double-1>', self._tree_edit_node)
+        self.hierarchy_tree.bind('<Delete>', self._tree_delete_node)
+
+        # Right-click context menu
+        self.tree_context_menu = tk.Menu(self, tearoff=0)
+        self.tree_context_menu.add_command(label="Add Child", command=self._tree_add_child)
+        self.tree_context_menu.add_command(label="Add Sibling", command=self._tree_add_sibling)
+        self.tree_context_menu.add_separator()
+        self.tree_context_menu.add_command(label="Indent (Tab)", command=lambda: self._tree_indent(None))
+        self.tree_context_menu.add_command(label="Outdent (Shift+Tab)", command=lambda: self._tree_outdent(None))
+        self.tree_context_menu.add_separator()
+        self.tree_context_menu.add_command(label="Edit (F2)", command=lambda: self._tree_edit_node(None))
+        self.tree_context_menu.add_command(label="Delete", command=lambda: self._tree_delete_node(None))
+
+        self.hierarchy_tree.bind('<Button-3>', self._show_tree_context_menu)
+        # Mac right-click
+        self.hierarchy_tree.bind('<Button-2>', self._show_tree_context_menu)
+
+        # Keep reference to data_tree for backward compatibility
+        self.data_tree = self.hierarchy_tree
+
+    def _create_outline_tab(self, parent):
+        """Create outline text editor tab"""
+        # Instructions
+        ttk.Label(parent, text="Tab=indent | Shift+Tab=outdent | Backspace at start=outdent",
+                 font=("Calibri", 9), foreground="gray").pack(anchor=tk.W, padx=5, pady=(5, 0))
+
+        # Text widget
+        text_frame = ttk.Frame(parent)
+        text_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
         vsb = ttk.Scrollbar(text_frame, orient="vertical")
         vsb.pack(side=tk.RIGHT, fill=tk.Y)
 
@@ -698,44 +785,359 @@ class MindmapViewPanel(ttk.Frame):
         self.outline_text.pack(fill=tk.BOTH, expand=True)
         vsb.config(command=self.outline_text.yview)
 
-        # Default placeholder text
+        # Default placeholder
         self.outline_text.insert('1.0', "Root\n\tChild 1\n\t\tGrandchild\n\tChild 2\n")
 
-        # Bind events for outline editing
+        # Bind events
         self.outline_text.bind('<KeyRelease>', self._on_outline_change)
         self.outline_text.bind('<Tab>', self._on_tab_press)
         self.outline_text.bind('<Shift-Tab>', self._on_shift_tab_press)
+        self.outline_text.bind('<BackSpace>', self._on_backspace_press)
 
-        # Auto-sync timer
-        self._outline_sync_timer = None
+    def _update_column_checkboxes(self):
+        """Update column checkboxes when Excel data changes"""
+        # Clear existing
+        for widget in self.column_frame.winfo_children():
+            widget.destroy()
+        self.column_vars.clear()
 
-        # Keep reference to data_tree for backward compatibility (may be None)
-        self.data_tree = None
+        columns = self.get_columns()
+        if not columns:
+            ttk.Label(self.column_frame, text="No data - load Excel first",
+                     foreground="gray").pack(anchor=tk.W)
+            return
 
-        self.paned.add(left_frame, minsize=200, width=300)
+        # Create checkbox for each column
+        for i, col in enumerate(columns):
+            var = tk.BooleanVar(value=True)  # Default checked
+            self.column_vars[col] = var
+            cb = ttk.Checkbutton(self.column_frame, text=col, variable=var)
+            cb.pack(anchor=tk.W)
+
+    def _select_all_columns(self):
+        """Select all column checkboxes"""
+        for var in self.column_vars.values():
+            var.set(True)
+
+    def _clear_all_columns(self):
+        """Clear all column checkboxes"""
+        for var in self.column_vars.values():
+            var.set(False)
+
+    def _generate_from_excel(self):
+        """Generate hierarchy tree from Excel data based on selected columns"""
+        columns = self.get_columns()
+        data = self.get_excel_data()
+
+        if not columns or not data:
+            messagebox.showwarning("No Data", "Please load data in Excel View first.")
+            return
+
+        # Get selected columns in order
+        selected_cols = [col for col in columns if self.column_vars.get(col, tk.BooleanVar()).get()]
+
+        if not selected_cols:
+            messagebox.showwarning("No Columns", "Please select at least one column.")
+            return
+
+        # Clear existing tree
+        for item in self.hierarchy_tree.get_children():
+            self.hierarchy_tree.delete(item)
+
+        # Build hierarchy from Excel rows
+        # Each row creates a path: col1_value -> col2_value -> col3_value -> ...
+        node_cache = {}  # path_tuple -> tree_item_id
+
+        for row in data:
+            if not row or not any(str(cell).strip() if cell else '' for cell in row):
+                continue
+
+            parent_id = ''  # Root
+            current_path = []
+
+            for col in selected_cols:
+                col_idx = columns.index(col) if col in columns else -1
+                if col_idx < 0 or col_idx >= len(row):
+                    continue
+
+                cell_value = row[col_idx]
+                if isinstance(cell_value, str):
+                    cell_value = cell_value.strip()
+                if not cell_value:
+                    continue
+
+                current_path.append(str(cell_value))
+                path_key = tuple(current_path)
+
+                if path_key not in node_cache:
+                    # Create new node
+                    item_id = self.hierarchy_tree.insert(parent_id, 'end', text=str(cell_value), open=True)
+                    node_cache[path_key] = item_id
+
+                parent_id = node_cache[path_key]
+
+        # Sync to mindmap
+        self._sync_tree_to_mindmap()
+
+    # ========================================================================
+    # TREE KEYBOARD CONTROLS
+    # ========================================================================
+
+    def _tree_indent(self, event):
+        """Indent selected item (make it child of previous sibling)"""
+        selected = self.hierarchy_tree.selection()
+        if not selected:
+            return 'break'
+
+        item = selected[0]
+        parent = self.hierarchy_tree.parent(item)
+        siblings = self.hierarchy_tree.get_children(parent)
+        idx = list(siblings).index(item)
+
+        if idx > 0:
+            # Move under previous sibling
+            new_parent = siblings[idx - 1]
+            self.hierarchy_tree.move(item, new_parent, 'end')
+            self.hierarchy_tree.item(new_parent, open=True)
+            self._schedule_tree_sync()
+
+        return 'break'
+
+    def _tree_outdent(self, event):
+        """Outdent selected item (make it sibling of parent)"""
+        selected = self.hierarchy_tree.selection()
+        if not selected:
+            return 'break'
+
+        item = selected[0]
+        parent = self.hierarchy_tree.parent(item)
+
+        if parent:  # Not at root level
+            grandparent = self.hierarchy_tree.parent(parent)
+            parent_idx = list(self.hierarchy_tree.get_children(grandparent)).index(parent)
+            self.hierarchy_tree.move(item, grandparent, parent_idx + 1)
+            self._schedule_tree_sync()
+
+        return 'break'
+
+    def _tree_backspace(self, event):
+        """Handle backspace - outdent if not editing"""
+        # Outdent the selected item
+        return self._tree_outdent(event)
+
+    def _tree_new_sibling(self, event):
+        """Add new sibling node after selected item"""
+        selected = self.hierarchy_tree.selection()
+
+        if selected:
+            item = selected[0]
+            parent = self.hierarchy_tree.parent(item)
+            idx = list(self.hierarchy_tree.get_children(parent)).index(item)
+            new_item = self.hierarchy_tree.insert(parent, idx + 1, text="New Item")
+        else:
+            new_item = self.hierarchy_tree.insert('', 'end', text="New Item")
+
+        self.hierarchy_tree.selection_set(new_item)
+        self.hierarchy_tree.focus(new_item)
+        self._schedule_tree_sync()
+
+        # Start editing the new item
+        self.after(100, lambda: self._tree_edit_node(None))
+        return 'break'
+
+    def _tree_add_child(self):
+        """Add child node under selected item"""
+        selected = self.hierarchy_tree.selection()
+        parent = selected[0] if selected else ''
+
+        new_item = self.hierarchy_tree.insert(parent, 'end', text="New Item")
+        if parent:
+            self.hierarchy_tree.item(parent, open=True)
+
+        self.hierarchy_tree.selection_set(new_item)
+        self.hierarchy_tree.focus(new_item)
+        self._schedule_tree_sync()
+
+        # Start editing
+        self.after(100, lambda: self._tree_edit_node(None))
+
+    def _tree_add_sibling(self):
+        """Add sibling node (context menu version)"""
+        self._tree_new_sibling(None)
+
+    def _tree_delete_node(self, event):
+        """Delete selected node"""
+        selected = self.hierarchy_tree.selection()
+        if not selected:
+            return 'break'
+
+        item = selected[0]
+        # Select next or previous item before deleting
+        next_item = self.hierarchy_tree.next(item) or self.hierarchy_tree.prev(item) or self.hierarchy_tree.parent(item)
+
+        self.hierarchy_tree.delete(item)
+
+        if next_item:
+            self.hierarchy_tree.selection_set(next_item)
+            self.hierarchy_tree.focus(next_item)
+
+        self._schedule_tree_sync()
+        return 'break'
+
+    def _tree_edit_node(self, event):
+        """Edit selected node text inline"""
+        selected = self.hierarchy_tree.selection()
+        if not selected:
+            return 'break'
+
+        item = selected[0]
+        text = self.hierarchy_tree.item(item, 'text')
+
+        # Get item bbox
+        try:
+            bbox = self.hierarchy_tree.bbox(item, '#0')
+            if not bbox:
+                return 'break'
+        except:
+            return 'break'
+
+        x, y, width, height = bbox
+
+        # Create entry widget for editing
+        self.edit_entry = ttk.Entry(self.hierarchy_tree)
+        self.edit_entry.insert(0, text)
+        self.edit_entry.select_range(0, tk.END)
+
+        self.edit_entry.place(x=x, y=y, width=max(width, 150), height=height)
+        self.edit_entry.focus_set()
+
+        def save_edit(e=None):
+            new_text = self.edit_entry.get().strip()
+            if new_text:
+                self.hierarchy_tree.item(item, text=new_text)
+            self.edit_entry.destroy()
+            self._schedule_tree_sync()
+
+        def cancel_edit(e=None):
+            self.edit_entry.destroy()
+
+        self.edit_entry.bind('<Return>', save_edit)
+        self.edit_entry.bind('<Escape>', cancel_edit)
+        self.edit_entry.bind('<FocusOut>', save_edit)
+
+        return 'break'
+
+    def _show_tree_context_menu(self, event):
+        """Show right-click context menu"""
+        # Select item under cursor
+        item = self.hierarchy_tree.identify_row(event.y)
+        if item:
+            self.hierarchy_tree.selection_set(item)
+            self.hierarchy_tree.focus(item)
+
+        self.tree_context_menu.tk_popup(event.x_root, event.y_root)
+
+    def _schedule_tree_sync(self):
+        """Schedule tree sync with debouncing"""
+        if self._tree_sync_timer:
+            self.after_cancel(self._tree_sync_timer)
+        self._tree_sync_timer = self.after(300, self._sync_tree_to_mindmap)
+
+    def _sync_tree_to_mindmap(self):
+        """Sync hierarchy tree to mindmap"""
+        self._tree_sync_timer = None
+
+        # Clear mindmap
+        self.mindmap.clear()
+
+        # Build mindmap from tree
+        color_index = 0
+
+        def add_node_recursive(tree_item, parent_id, depth):
+            nonlocal color_index
+
+            text = self.hierarchy_tree.item(tree_item, 'text')
+            if not text:
+                return
+
+            # Assign style based on depth
+            if depth == 0:
+                style = NodeStyle(
+                    shape=NodeShape.ELLIPSE,
+                    fill_color="#4472C4",
+                    border_color="#2E5090",
+                    text_color="#FFFFFF",
+                    font_size=14,
+                    font_bold=True
+                )
+            elif depth == 1:
+                color_set = get_color_set(color_index)
+                color_index += 1
+                style = NodeStyle(
+                    fill_color=f"#{color_set['header']}",
+                    border_color=f"#{color_set['header']}",
+                    font_bold=True,
+                    font_size=12
+                )
+            else:
+                style = NodeStyle(font_size=10)
+
+            node_id = self.mindmap.add_node(text, parent_id=parent_id, style=style)
+
+            # Process children
+            for child in self.hierarchy_tree.get_children(tree_item):
+                add_node_recursive(child, node_id, depth + 1)
+
+        # Process all root items
+        for root_item in self.hierarchy_tree.get_children():
+            add_node_recursive(root_item, None, 0)
+
+        # Redraw
+        self.mindmap.redraw()
+        self.mindmap.fit_all()
+        self._update_status()
+        self.sync_status_label.config(text="Synced", foreground="green")
+
+    # ========================================================================
+    # OUTLINE TAB CONTROLS
+    # ========================================================================
 
     def _on_tab_press(self, event):
         """Handle Tab key - insert tab character"""
         self.outline_text.insert(tk.INSERT, '\t')
         self._schedule_outline_sync()
-        return 'break'  # Prevent default Tab behavior
+        return 'break'
 
     def _on_shift_tab_press(self, event):
         """Handle Shift+Tab - remove one level of indentation"""
-        # Get current line
         line_start = self.outline_text.index(f"{tk.INSERT} linestart")
         line_text = self.outline_text.get(line_start, f"{line_start} lineend")
 
-        # Remove leading tab if present
         if line_text.startswith('\t'):
             self.outline_text.delete(line_start, f"{line_start}+1c")
 
         self._schedule_outline_sync()
         return 'break'
 
+    def _on_backspace_press(self, event):
+        """Handle Backspace - outdent if at start of line"""
+        # Check if cursor is at start of line (after any indentation)
+        cursor_pos = self.outline_text.index(tk.INSERT)
+        line_start = self.outline_text.index(f"{cursor_pos} linestart")
+        text_before = self.outline_text.get(line_start, cursor_pos)
+
+        # If only tabs before cursor, remove one tab (outdent)
+        if text_before and text_before.replace('\t', '') == '':
+            if text_before.startswith('\t'):
+                self.outline_text.delete(line_start, f"{line_start}+1c")
+                self._schedule_outline_sync()
+                return 'break'
+
+        # Otherwise, let default backspace behavior happen
+        return None
+
     def _on_outline_change(self, event=None):
         """Handle text changes in outline"""
-        # Schedule sync with debounce
         self._schedule_outline_sync()
 
     def _schedule_outline_sync(self):
@@ -1556,10 +1958,19 @@ class MindmapViewPanel(ttk.Frame):
 
     def auto_apply_if_data(self):
         """Auto-apply mindmap when switching to view"""
-        # Use outline text if available
+        # Update column checkboxes when switching to view
+        if hasattr(self, 'column_frame'):
+            self._update_column_checkboxes()
+
+        # Check if hierarchy tree has content
+        if hasattr(self, 'hierarchy_tree') and self.hierarchy_tree.get_children():
+            self._sync_tree_to_mindmap()
+            return
+
+        # Use outline text if available and non-empty
         if hasattr(self, 'outline_text') and self.outline_text:
             text = self.outline_text.get('1.0', tk.END).strip()
-            if text:
+            if text and text != "Root\n\tChild 1\n\t\tGrandchild\n\tChild 2":  # Skip placeholder
                 self._sync_outline_to_mindmap()
                 return
 

@@ -41,7 +41,7 @@ class ColumnMappingDialog(tk.Toplevel):
         super().__init__(parent)
 
         self.title("Column Mapping for Mindmap")
-        self.geometry("500x450")
+        self.geometry("550x520")
         self.transient(parent)
         self.grab_set()
 
@@ -57,15 +57,68 @@ class ColumnMappingDialog(tk.Toplevel):
         main_frame = ttk.Frame(self, padding="20")
         main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Instructions
-        ttk.Label(main_frame, text="Map Excel columns to mindmap hierarchy levels:",
-                 font=("Calibri", 11, "bold")).pack(anchor=tk.W, pady=(0, 15))
+        # Mode selector at top
+        mode_frame = ttk.LabelFrame(main_frame, text="Mapping Mode", padding="10")
+        mode_frame.pack(fill=tk.X, pady=(0, 15))
 
-        # Mapping frame
-        mapping_frame = ttk.LabelFrame(main_frame, text="Column Mapping", padding="10")
-        mapping_frame.pack(fill=tk.X, pady=(0, 15))
+        self.mode_var = tk.StringVar(value="by_columns")
 
-        # Level mappings
+        modes = [
+            ("by_columns", "By Columns", "Each column = hierarchy level (Drug Class → Drug Name → Route)"),
+            ("by_parent", "By Parent", "Two columns: Node name + Parent name (flexible branching)"),
+            ("by_level", "By Level", "Two columns: Level number + Node name (outline style)")
+        ]
+
+        for mode_id, mode_name, mode_desc in modes:
+            frame = ttk.Frame(mode_frame)
+            frame.pack(fill=tk.X, pady=2)
+            ttk.Radiobutton(frame, text=mode_name, variable=self.mode_var,
+                           value=mode_id, command=self._on_mode_change).pack(side=tk.LEFT)
+            ttk.Label(frame, text=f"- {mode_desc}", foreground="gray").pack(side=tk.LEFT, padx=(10, 0))
+
+        # Dynamic mapping frame (changes based on mode)
+        self.mapping_container = ttk.Frame(main_frame)
+        self.mapping_container.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+
+        # Create all mode frames
+        self._create_by_columns_frame()
+        self._create_by_parent_frame()
+        self._create_by_level_frame()
+
+        # Show initial mode
+        self._on_mode_change()
+
+        # Options frame
+        options_frame = ttk.LabelFrame(main_frame, text="Options", padding="10")
+        options_frame.pack(fill=tk.X, pady=(0, 15))
+
+        self.include_all_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(options_frame, text="Include all remaining columns as node details",
+                       variable=self.include_all_var).pack(anchor=tk.W)
+
+        self.color_by_group_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(options_frame, text="Auto-color nodes by group",
+                       variable=self.color_by_group_var).pack(anchor=tk.W)
+
+        # Preview frame
+        preview_frame = ttk.LabelFrame(main_frame, text="Hierarchy Preview", padding="10")
+        preview_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+
+        self.preview_text = tk.Text(preview_frame, height=5, width=50, state='disabled',
+                                   font=("Courier", 10))
+        self.preview_text.pack(fill=tk.BOTH, expand=True)
+
+        # Buttons
+        button_frame = ttk.Frame(main_frame)
+        button_frame.pack(fill=tk.X)
+
+        ttk.Button(button_frame, text="Cancel", command=self.destroy).pack(side=tk.RIGHT, padx=(10, 0))
+        ttk.Button(button_frame, text="Apply Mapping", command=self._apply).pack(side=tk.RIGHT)
+
+    def _create_by_columns_frame(self):
+        """Create the By Columns mapping UI"""
+        self.by_columns_frame = ttk.LabelFrame(self.mapping_container, text="Column Hierarchy", padding="10")
+
         self.level_vars = []
         levels = [
             ("Root Nodes (Level 1):", "Groups items by this column"),
@@ -77,101 +130,218 @@ class ColumnMappingDialog(tk.Toplevel):
         column_options = ["(None)"] + self.columns
 
         for i, (label, hint) in enumerate(levels):
-            frame = ttk.Frame(mapping_frame)
-            frame.pack(fill=tk.X, pady=5)
+            frame = ttk.Frame(self.by_columns_frame)
+            frame.pack(fill=tk.X, pady=3)
 
-            ttk.Label(frame, text=label, width=22).pack(side=tk.LEFT)
+            ttk.Label(frame, text=label, width=20).pack(side=tk.LEFT)
 
             var = tk.StringVar()
             combo = ttk.Combobox(frame, textvariable=var, values=column_options,
-                                state="readonly", width=25)
+                                state="readonly", width=20)
             combo.pack(side=tk.LEFT, padx=(0, 10))
 
-            # Set defaults
             if i < len(self.columns):
                 var.set(self.columns[i])
             else:
                 var.set("(None)")
 
             self.level_vars.append(var)
-
-            ttk.Label(frame, text=hint, foreground="gray").pack(side=tk.LEFT)
-
-        # Options frame
-        options_frame = ttk.LabelFrame(main_frame, text="Options", padding="10")
-        options_frame.pack(fill=tk.X, pady=(0, 15))
-
-        self.include_all_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(options_frame, text="Include all remaining columns as node details",
-                       variable=self.include_all_var).pack(anchor=tk.W)
-
-        self.color_by_group_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(options_frame, text="Auto-color nodes by group (Level 1)",
-                       variable=self.color_by_group_var).pack(anchor=tk.W)
-
-        # Preview frame
-        preview_frame = ttk.LabelFrame(main_frame, text="Hierarchy Preview", padding="10")
-        preview_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
-
-        self.preview_text = tk.Text(preview_frame, height=6, width=50, state='disabled',
-                                   font=("Courier", 10))
-        self.preview_text.pack(fill=tk.BOTH, expand=True)
-
-        # Update preview when selection changes
-        for var in self.level_vars:
             var.trace_add('write', lambda *args: self._update_preview())
 
+            ttk.Label(frame, text=hint, foreground="gray", font=("Calibri", 9)).pack(side=tk.LEFT)
+
+    def _create_by_parent_frame(self):
+        """Create the By Parent mapping UI"""
+        self.by_parent_frame = ttk.LabelFrame(self.mapping_container, text="Parent-Child Columns", padding="10")
+
+        column_options = ["(None)"] + self.columns
+
+        # Node name column
+        frame1 = ttk.Frame(self.by_parent_frame)
+        frame1.pack(fill=tk.X, pady=5)
+        ttk.Label(frame1, text="Node Name Column:", width=20).pack(side=tk.LEFT)
+        self.node_name_var = tk.StringVar(value=self.columns[0] if self.columns else "(None)")
+        combo1 = ttk.Combobox(frame1, textvariable=self.node_name_var, values=column_options,
+                             state="readonly", width=20)
+        combo1.pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(frame1, text="The name/label of each node", foreground="gray", font=("Calibri", 9)).pack(side=tk.LEFT)
+        self.node_name_var.trace_add('write', lambda *args: self._update_preview())
+
+        # Parent column
+        frame2 = ttk.Frame(self.by_parent_frame)
+        frame2.pack(fill=tk.X, pady=5)
+        ttk.Label(frame2, text="Parent Column:", width=20).pack(side=tk.LEFT)
+        self.parent_col_var = tk.StringVar(value=self.columns[1] if len(self.columns) > 1 else "(None)")
+        combo2 = ttk.Combobox(frame2, textvariable=self.parent_col_var, values=column_options,
+                             state="readonly", width=20)
+        combo2.pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(frame2, text="The parent node (blank = root)", foreground="gray", font=("Calibri", 9)).pack(side=tk.LEFT)
+        self.parent_col_var.trace_add('write', lambda *args: self._update_preview())
+
+        # Help text
+        help_text = ttk.Label(self.by_parent_frame,
+                             text="Example: Node='Apple', Parent='Fruits' → Fruits → Apple",
+                             foreground="blue", font=("Calibri", 9))
+        help_text.pack(anchor=tk.W, pady=(10, 0))
+
+    def _create_by_level_frame(self):
+        """Create the By Level mapping UI"""
+        self.by_level_frame = ttk.LabelFrame(self.mapping_container, text="Level-Based Columns", padding="10")
+
+        column_options = ["(None)"] + self.columns
+
+        # Level column
+        frame1 = ttk.Frame(self.by_level_frame)
+        frame1.pack(fill=tk.X, pady=5)
+        ttk.Label(frame1, text="Level Column:", width=20).pack(side=tk.LEFT)
+        self.level_col_var = tk.StringVar(value=self.columns[0] if self.columns else "(None)")
+        combo1 = ttk.Combobox(frame1, textvariable=self.level_col_var, values=column_options,
+                             state="readonly", width=20)
+        combo1.pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(frame1, text="Hierarchy depth (1, 2, 3...)", foreground="gray", font=("Calibri", 9)).pack(side=tk.LEFT)
+        self.level_col_var.trace_add('write', lambda *args: self._update_preview())
+
+        # Node name column
+        frame2 = ttk.Frame(self.by_level_frame)
+        frame2.pack(fill=tk.X, pady=5)
+        ttk.Label(frame2, text="Node Name Column:", width=20).pack(side=tk.LEFT)
+        self.level_name_var = tk.StringVar(value=self.columns[1] if len(self.columns) > 1 else "(None)")
+        combo2 = ttk.Combobox(frame2, textvariable=self.level_name_var, values=column_options,
+                             state="readonly", width=20)
+        combo2.pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Label(frame2, text="The name/label of each node", foreground="gray", font=("Calibri", 9)).pack(side=tk.LEFT)
+        self.level_name_var.trace_add('write', lambda *args: self._update_preview())
+
+        # Help text
+        help_text = ttk.Label(self.by_level_frame,
+                             text="Example: Level=2, Name='Apple' → Child node under most recent Level 1",
+                             foreground="blue", font=("Calibri", 9))
+        help_text.pack(anchor=tk.W, pady=(10, 0))
+
+    def _on_mode_change(self):
+        """Handle mode selection change"""
+        # Hide all frames
+        self.by_columns_frame.pack_forget()
+        self.by_parent_frame.pack_forget()
+        self.by_level_frame.pack_forget()
+
+        # Show selected frame
+        mode = self.mode_var.get()
+        if mode == "by_columns":
+            self.by_columns_frame.pack(fill=tk.BOTH, expand=True)
+        elif mode == "by_parent":
+            self.by_parent_frame.pack(fill=tk.BOTH, expand=True)
+        elif mode == "by_level":
+            self.by_level_frame.pack(fill=tk.BOTH, expand=True)
+
         self._update_preview()
-
-        # Buttons
-        button_frame = ttk.Frame(main_frame)
-        button_frame.pack(fill=tk.X)
-
-        ttk.Button(button_frame, text="Cancel", command=self.destroy).pack(side=tk.RIGHT, padx=(10, 0))
-        ttk.Button(button_frame, text="Apply Mapping", command=self._apply).pack(side=tk.RIGHT)
 
     def _update_preview(self):
         """Update the hierarchy preview"""
         self.preview_text.config(state='normal')
         self.preview_text.delete('1.0', tk.END)
 
+        mode = self.mode_var.get()
         lines = []
-        indent = 0
-        for var in self.level_vars:
-            col = var.get()
-            if col and col != "(None)":
-                prefix = "  " * indent + ("└─ " if indent > 0 else "")
-                lines.append(f"{prefix}{col}")
-                indent += 1
 
-        if self.include_all_var.get():
-            # Add remaining columns
-            selected = {var.get() for var in self.level_vars if var.get() != "(None)"}
-            remaining = [c for c in self.columns if c not in selected]
-            if remaining:
-                prefix = "  " * indent + "└─ "
-                lines.append(f"{prefix}({', '.join(remaining[:3])}{'...' if len(remaining) > 3 else ''})")
+        if mode == "by_columns":
+            indent = 0
+            for var in self.level_vars:
+                col = var.get()
+                if col and col != "(None)":
+                    prefix = "  " * indent + ("└─ " if indent > 0 else "")
+                    lines.append(f"{prefix}{col}")
+                    indent += 1
+
+            if self.include_all_var.get():
+                selected = {var.get() for var in self.level_vars if var.get() != "(None)"}
+                remaining = [c for c in self.columns if c not in selected]
+                if remaining:
+                    prefix = "  " * indent + "└─ "
+                    lines.append(f"{prefix}({', '.join(remaining[:3])}{'...' if len(remaining) > 3 else ''})")
+
+        elif mode == "by_parent":
+            node_col = self.node_name_var.get()
+            parent_col = self.parent_col_var.get()
+            if node_col != "(None)" and parent_col != "(None)":
+                lines = [
+                    "Root (parent is blank)",
+                    "└─ Child A (parent = Root)",
+                    "  └─ Grandchild (parent = Child A)",
+                    "└─ Child B (parent = Root)"
+                ]
+            else:
+                lines = ["Select Node Name and Parent columns"]
+
+        elif mode == "by_level":
+            level_col = self.level_col_var.get()
+            name_col = self.level_name_var.get()
+            if level_col != "(None)" and name_col != "(None)":
+                lines = [
+                    "Level 1: Root",
+                    "└─ Level 2: Child A",
+                    "  └─ Level 3: Grandchild",
+                    "└─ Level 2: Child B"
+                ]
+            else:
+                lines = ["Select Level and Node Name columns"]
 
         self.preview_text.insert('1.0', "\n".join(lines))
         self.preview_text.config(state='disabled')
 
     def _apply(self):
         """Apply the mapping"""
-        mapping = []
-        for var in self.level_vars:
-            col = var.get()
-            if col and col != "(None)":
-                mapping.append(col)
+        mode = self.mode_var.get()
 
-        if not mapping:
-            messagebox.showwarning("No Mapping", "Please select at least one column for mapping.")
-            return
+        if mode == "by_columns":
+            mapping = []
+            for var in self.level_vars:
+                col = var.get()
+                if col and col != "(None)":
+                    mapping.append(col)
 
-        self.result = {
-            'levels': mapping,
-            'include_all': self.include_all_var.get(),
-            'color_by_group': self.color_by_group_var.get()
-        }
+            if not mapping:
+                messagebox.showwarning("No Mapping", "Please select at least one column for mapping.")
+                return
+
+            self.result = {
+                'mode': 'by_columns',
+                'levels': mapping,
+                'include_all': self.include_all_var.get(),
+                'color_by_group': self.color_by_group_var.get()
+            }
+
+        elif mode == "by_parent":
+            node_col = self.node_name_var.get()
+            parent_col = self.parent_col_var.get()
+
+            if node_col == "(None)" or parent_col == "(None)":
+                messagebox.showwarning("Missing Columns", "Please select both Node Name and Parent columns.")
+                return
+
+            self.result = {
+                'mode': 'by_parent',
+                'node_column': node_col,
+                'parent_column': parent_col,
+                'include_all': self.include_all_var.get(),
+                'color_by_group': self.color_by_group_var.get()
+            }
+
+        elif mode == "by_level":
+            level_col = self.level_col_var.get()
+            name_col = self.level_name_var.get()
+
+            if level_col == "(None)" or name_col == "(None)":
+                messagebox.showwarning("Missing Columns", "Please select both Level and Node Name columns.")
+                return
+
+            self.result = {
+                'mode': 'by_level',
+                'level_column': level_col,
+                'name_column': name_col,
+                'include_all': self.include_all_var.get(),
+                'color_by_group': self.color_by_group_var.get()
+            }
 
         self.callback(self.result)
         self.destroy()
@@ -418,7 +588,7 @@ class MindmapViewPanel(ttk.Frame):
         layout_combo = ttk.Combobox(toolbar, textvariable=self.layout_var, state="readonly", width=18)
         layout_combo['values'] = [
             "Tree Right", "Tree Left", "Tree Down", "Tree Up",
-            "Vertical Balanced", "Horizontal Balanced", "Four-Way Balanced",
+            "Vertical Balanced", "Horizontal Balanced", "Org Chart",
             "Vertical Custom", "Horizontal Custom",
             "Radial", "Free Form"
         ]
@@ -604,7 +774,13 @@ class MindmapViewPanel(ttk.Frame):
     # ========================================================================
 
     def load_from_excel_data(self, mapping: dict = None):
-        """Convert Excel data to mindmap based on column mapping"""
+        """Convert Excel data to mindmap based on column mapping
+
+        Supports three mapping modes:
+        - by_columns: Each column represents a hierarchy level
+        - by_parent: Two columns (Node Name + Parent Name) for flexible branching
+        - by_level: Two columns (Level Number + Node Name) for outline style
+        """
         if mapping:
             self.column_mapping = mapping
 
@@ -620,7 +796,28 @@ class MindmapViewPanel(ttk.Frame):
         # Clear existing mindmap
         self.mindmap.clear()
 
-        # Get level columns
+        # Determine mode (default to by_columns for backward compatibility)
+        mode = self.column_mapping.get('mode', 'by_columns')
+
+        if mode == 'by_columns':
+            self._load_by_columns(columns, data)
+        elif mode == 'by_parent':
+            self._load_by_parent(columns, data)
+        elif mode == 'by_level':
+            self._load_by_level(columns, data)
+
+        # Update tree view
+        self._update_tree_view()
+
+        # Redraw mindmap
+        self.mindmap.redraw()
+        self.mindmap.fit_all()
+
+        # Update status
+        self._update_status()
+
+    def _load_by_columns(self, columns: List[str], data: List):
+        """Load mindmap using column-based hierarchy (original mode)"""
         level_cols = self.column_mapping.get('levels', [])
         if not level_cols:
             return
@@ -634,7 +831,6 @@ class MindmapViewPanel(ttk.Frame):
                 level_indices.append(-1)
 
         # Build tree structure
-        # Level 0: Root (chart name or first level column name)
         root_col = level_cols[0] if level_cols else "Mindmap"
         root_id = self.mindmap.add_node(root_col)
 
@@ -650,13 +846,13 @@ class MindmapViewPanel(ttk.Frame):
         self.mindmap.nodes[root_id].style = root_style
 
         # Track created nodes for hierarchy
-        node_cache = {}  # (level, value) -> node_id
+        node_cache = {}
         color_index = 0
 
         # Process each row
         for row_idx, row in enumerate(data):
             if not row or not any(cell.strip() if isinstance(cell, str) else cell for cell in row):
-                continue  # Skip empty rows
+                continue
 
             parent_id = root_id
             current_path = []
@@ -672,16 +868,12 @@ class MindmapViewPanel(ttk.Frame):
                     continue
 
                 # Support multiple branches: split by ; or | delimiters
-                # E.g., "a; b; c" creates 3 sibling nodes under the same parent
+                import re
                 if isinstance(cell_value, str) and (';' in cell_value or '|' in cell_value):
-                    # Split by semicolon or pipe, creating multiple branches
-                    import re
                     values = [v.strip() for v in re.split(r'[;|]', cell_value) if v.strip()]
                 else:
                     values = [str(cell_value)]
 
-                # Create a node for each value (supports multi-branch)
-                # If single value, add to path; if multiple, create sibling branches
                 created_node_id = None
                 for value in values:
                     branch_path = current_path + [value]
@@ -690,8 +882,7 @@ class MindmapViewPanel(ttk.Frame):
                     if cache_key in node_cache:
                         created_node_id = node_cache[cache_key]
                     else:
-                        # Create new node
-                        # Assign color based on level 1 groups
+                        # Assign color based on level
                         if level == 0:
                             color_set = get_color_set(color_index)
                             color_index += 1
@@ -702,11 +893,9 @@ class MindmapViewPanel(ttk.Frame):
                                 font_size=12
                             )
                         elif level == 1:
-                            # Get parent's color
                             parent_node = self.mindmap.get_node(parent_id)
                             if parent_node:
                                 parent_fill = parent_node.style.fill_color.lstrip('#')
-                                # Find matching color set
                                 for cs in COLOR_SETS:
                                     if cs['header'] == parent_fill:
                                         style = NodeStyle(
@@ -721,7 +910,7 @@ class MindmapViewPanel(ttk.Frame):
                         else:
                             style = NodeStyle(font_size=10)
 
-                        # Store extra data (other columns)
+                        # Store extra data
                         extra_data = {}
                         if self.column_mapping.get('include_all', True):
                             for i, col in enumerate(columns):
@@ -735,21 +924,188 @@ class MindmapViewPanel(ttk.Frame):
                         node_cache[cache_key] = node_id
                         created_node_id = node_id
 
-                # For next level, use the last created node (or first if single value)
-                # Update current_path with first value for hierarchy tracking
                 if values:
                     current_path.append(values[0])
                     parent_id = created_node_id if created_node_id else parent_id
 
-        # Update tree view
-        self._update_tree_view()
+    def _load_by_parent(self, columns: List[str], data: List):
+        """Load mindmap using parent-child column mapping (flexible branching)"""
+        node_col = self.column_mapping.get('node_column')
+        parent_col = self.column_mapping.get('parent_column')
 
-        # Redraw mindmap
-        self.mindmap.redraw()
-        self.mindmap.fit_all()
+        if not node_col or not parent_col:
+            return
 
-        # Update status
-        self._update_status()
+        node_idx = columns.index(node_col) if node_col in columns else -1
+        parent_idx = columns.index(parent_col) if parent_col in columns else -1
+
+        if node_idx < 0 or parent_idx < 0:
+            return
+
+        # First pass: collect all nodes and their parents
+        node_parents = {}  # node_name -> parent_name
+        node_rows = {}  # node_name -> row data (for extra columns)
+
+        for row in data:
+            if not row or len(row) <= max(node_idx, parent_idx):
+                continue
+
+            node_name = row[node_idx]
+            parent_name = row[parent_idx] if parent_idx < len(row) else ""
+
+            if isinstance(node_name, str):
+                node_name = node_name.strip()
+            if isinstance(parent_name, str):
+                parent_name = parent_name.strip()
+
+            if node_name:
+                node_parents[node_name] = parent_name if parent_name else None
+                node_rows[node_name] = row
+
+        # Find root nodes (those with no parent or parent not in our list)
+        root_nodes = [n for n, p in node_parents.items() if not p or p not in node_parents]
+
+        if not root_nodes:
+            return
+
+        # Create nodes in order
+        node_cache = {}  # node_name -> node_id
+        color_index = 0
+
+        def create_node_recursive(node_name, parent_id, depth):
+            nonlocal color_index
+
+            if node_name in node_cache:
+                return node_cache[node_name]
+
+            # Assign style based on depth
+            if depth == 0:
+                style = NodeStyle(
+                    shape=NodeShape.ELLIPSE,
+                    fill_color="#4472C4",
+                    border_color="#2E5090",
+                    text_color="#FFFFFF",
+                    font_size=14,
+                    font_bold=True
+                )
+            elif depth == 1:
+                color_set = get_color_set(color_index)
+                color_index += 1
+                style = NodeStyle(
+                    fill_color=f"#{color_set['header']}",
+                    border_color=f"#{color_set['header']}",
+                    font_bold=True,
+                    font_size=12
+                )
+            else:
+                style = NodeStyle(font_size=10)
+
+            # Get extra data from row
+            extra_data = {}
+            if node_name in node_rows and self.column_mapping.get('include_all', True):
+                row = node_rows[node_name]
+                for i, col in enumerate(columns):
+                    if col not in [node_col, parent_col] and i < len(row):
+                        val = row[i]
+                        if val and (isinstance(val, str) and val.strip()):
+                            extra_data[col] = str(val).strip()
+
+            node_id = self.mindmap.add_node(node_name, parent_id=parent_id,
+                                           style=style, extra_data=extra_data)
+            node_cache[node_name] = node_id
+
+            # Find and create children
+            children = [n for n, p in node_parents.items() if p == node_name]
+            for child in children:
+                create_node_recursive(child, node_id, depth + 1)
+
+            return node_id
+
+        # Create tree starting from root nodes
+        for root_name in root_nodes:
+            create_node_recursive(root_name, None, 0)
+
+    def _load_by_level(self, columns: List[str], data: List):
+        """Load mindmap using level-based column mapping (outline style)"""
+        level_col = self.column_mapping.get('level_column')
+        name_col = self.column_mapping.get('name_column')
+
+        if not level_col or not name_col:
+            return
+
+        level_idx = columns.index(level_col) if level_col in columns else -1
+        name_idx = columns.index(name_col) if name_col in columns else -1
+
+        if level_idx < 0 or name_idx < 0:
+            return
+
+        # Track parent at each level
+        level_parents = {}  # level -> most recent node_id at that level
+        color_index = 0
+
+        for row in data:
+            if not row or len(row) <= max(level_idx, name_idx):
+                continue
+
+            level_val = row[level_idx]
+            node_name = row[name_idx]
+
+            if isinstance(node_name, str):
+                node_name = node_name.strip()
+            if not node_name:
+                continue
+
+            # Parse level (handle string or number)
+            try:
+                level = int(float(str(level_val).strip())) if level_val else 1
+            except (ValueError, TypeError):
+                level = 1
+
+            # Find parent (most recent node at level - 1)
+            parent_id = None
+            if level > 1:
+                parent_id = level_parents.get(level - 1)
+
+            # Assign style based on level
+            if level == 1:
+                style = NodeStyle(
+                    shape=NodeShape.ELLIPSE,
+                    fill_color="#4472C4",
+                    border_color="#2E5090",
+                    text_color="#FFFFFF",
+                    font_size=14,
+                    font_bold=True
+                )
+            elif level == 2:
+                color_set = get_color_set(color_index)
+                color_index += 1
+                style = NodeStyle(
+                    fill_color=f"#{color_set['header']}",
+                    border_color=f"#{color_set['header']}",
+                    font_bold=True,
+                    font_size=12
+                )
+            else:
+                style = NodeStyle(font_size=10)
+
+            # Get extra data
+            extra_data = {}
+            if self.column_mapping.get('include_all', True):
+                for i, col in enumerate(columns):
+                    if col not in [level_col, name_col] and i < len(row):
+                        val = row[i]
+                        if val and (isinstance(val, str) and val.strip()):
+                            extra_data[col] = str(val).strip()
+
+            node_id = self.mindmap.add_node(node_name, parent_id=parent_id,
+                                           style=style, extra_data=extra_data)
+
+            # Update level_parents for this and all deeper levels
+            level_parents[level] = node_id
+            # Clear deeper levels (they'll get new parents)
+            for deeper_level in list(level_parents.keys()):
+                if deeper_level > level:
+                    del level_parents[deeper_level]
 
     def _update_tree_view(self):
         """Update the treeview with current Excel data"""
@@ -790,7 +1146,7 @@ class MindmapViewPanel(ttk.Frame):
             "Tree Up": LayoutType.TREE_UP,
             "Vertical Balanced": LayoutType.VERTICAL_BALANCED,
             "Horizontal Balanced": LayoutType.HORIZONTAL_BALANCED,
-            "Four-Way Balanced": LayoutType.FOUR_WAY_BALANCED,
+            "Org Chart": LayoutType.FOUR_WAY_BALANCED,
             "Vertical Custom": LayoutType.VERTICAL_CUSTOM,
             "Horizontal Custom": LayoutType.HORIZONTAL_CUSTOM,
             "Radial": LayoutType.RADIAL,

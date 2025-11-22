@@ -256,7 +256,7 @@ class ExcelMasterChartApp:
         self.output_filename = tk.StringVar(value="Master_Chart.xlsx")
         self.output_directory = tk.StringVar(value=str(Path.home() / "Desktop"))
         self.export_format = tk.StringVar(value="master_chart")
-        self.live_preview_var = tk.BooleanVar(value=False)
+        self.live_preview_var = tk.BooleanVar(value=True)  # Auto-colors enabled by default
 
         # Auto-save settings
         self.autosave_path = Path.home() / ".excel_master_chart_autosave.json"
@@ -264,6 +264,9 @@ class ExcelMasterChartApp:
         self.autosave_running = True
         self.unsaved_changes = False
         self.last_save_time = None
+
+        # Mindmap auto-sync debounce timer
+        self._mindmap_sync_timer = None
 
         # Recent files
         self.recent_files_path = Path.home() / ".excel_master_chart_recent.json"
@@ -370,27 +373,154 @@ class ExcelMasterChartApp:
     # ========================================================================
 
     def setup_ui(self):
-        """Create the main user interface - Ribbon style"""
+        """Create the main user interface - Ribbon style with View Tabs"""
         # Configure root window
         self.root.columnconfigure(0, weight=1)
-        self.root.rowconfigure(0, weight=0)  # Ribbon - fixed
-        self.root.rowconfigure(1, weight=1)  # Data grid - expandable
-        self.root.rowconfigure(2, weight=0)  # Status bar - fixed
+        self.root.rowconfigure(0, weight=0)  # View tabs - fixed
+        self.root.rowconfigure(1, weight=0)  # Ribbon - fixed
+        self.root.rowconfigure(2, weight=1)  # Content area - expandable
+        self.root.rowconfigure(3, weight=0)  # Status bar - fixed
+
+        # Create main view tabs (Excel View / Mindmap View)
+        self.create_view_tabs()
 
         # Create ribbon toolbar
         self.create_ribbon()
 
-        # Create data grid (main area)
-        self.create_data_grid_ribbon_style()
+        # Create content area with notebook for views
+        self.create_content_area()
 
         # Create status bar at bottom
         self.create_status_bar_bottom()
 
+    def create_view_tabs(self):
+        """Create the main view tabs bar"""
+        view_tabs_frame = ttk.Frame(self.root)
+        view_tabs_frame.grid(row=0, column=0, sticky='ew', padx=0, pady=0)
+
+        # Style for view tabs
+        style = ttk.Style()
+        style.configure('ViewTab.TButton', padding=(20, 8), font=('Calibri', 11, 'bold'))
+
+        self.current_view = tk.StringVar(value="excel")
+
+        # Excel View button
+        self.excel_view_btn = ttk.Button(
+            view_tabs_frame,
+            text="Excel View",
+            style='ViewTab.TButton',
+            command=lambda: self.switch_view("excel")
+        )
+        self.excel_view_btn.pack(side=tk.LEFT, padx=(5, 0), pady=5)
+
+        # Mindmap View button
+        self.mindmap_view_btn = ttk.Button(
+            view_tabs_frame,
+            text="Mindmap View",
+            style='ViewTab.TButton',
+            command=lambda: self.switch_view("mindmap")
+        )
+        self.mindmap_view_btn.pack(side=tk.LEFT, padx=(2, 0), pady=5)
+
+        # Highlight current tab
+        self._update_view_tab_styles()
+
+    def _update_view_tab_styles(self):
+        """Update view tab button styles based on current view"""
+        if self.current_view.get() == "excel":
+            self.excel_view_btn.state(['pressed'])
+            self.mindmap_view_btn.state(['!pressed'])
+        else:
+            self.excel_view_btn.state(['!pressed'])
+            self.mindmap_view_btn.state(['pressed'])
+
+    def switch_view(self, view_name: str):
+        """Switch between Excel and Mindmap views"""
+        self.current_view.set(view_name)
+        self._update_view_tab_styles()
+
+        if view_name == "excel":
+            self.content_notebook.select(0)
+            # Show Excel ribbon
+            self.ribbon_container.pack(fill=tk.BOTH, expand=True)
+        else:
+            self.content_notebook.select(1)
+            # Could hide Excel ribbon or show mindmap toolbar
+            # For now, keep ribbon visible
+
+            # Refresh mindmap when switching to that view
+            if hasattr(self, 'mindmap_panel') and self.mindmap_panel:
+                self.mindmap_panel._update_tree_view()
+
+    def create_content_area(self):
+        """Create the main content area with Excel and Mindmap views"""
+        # Notebook to hold both views (but hide tabs - we use custom buttons)
+        self.content_notebook = ttk.Notebook(self.root)
+        self.content_notebook.grid(row=2, column=0, sticky='nsew', padx=0, pady=0)
+
+        # Hide the notebook tabs (we use our custom view tabs)
+        style = ttk.Style()
+        style.layout('TNotebook.Tab', [])  # Empty layout hides tabs
+
+        # Excel View Frame
+        self.excel_view_frame = ttk.Frame(self.content_notebook)
+        self.content_notebook.add(self.excel_view_frame, text="Excel")
+
+        # Create data grid in Excel view
+        self.create_data_grid_ribbon_style(self.excel_view_frame)
+
+        # Mindmap View Frame
+        self.mindmap_view_frame = ttk.Frame(self.content_notebook)
+        self.content_notebook.add(self.mindmap_view_frame, text="Mindmap")
+
+        # Create mindmap panel
+        self.create_mindmap_panel()
+
+    def create_mindmap_panel(self):
+        """Create the mindmap panel with integration"""
+        try:
+            from mindmap_integration import MindmapViewPanel
+
+            self.mindmap_panel = MindmapViewPanel(
+                self.mindmap_view_frame,
+                get_excel_data=self.get_sheet_data,
+                get_columns=self.get_current_columns,
+                update_excel_data=self.update_sheet_data
+            )
+            self.mindmap_panel.pack(fill=tk.BOTH, expand=True)
+        except ImportError as e:
+            # Fallback if mindmap module not available
+            self.mindmap_panel = None
+            fallback_label = ttk.Label(
+                self.mindmap_view_frame,
+                text=f"Mindmap module not available.\nError: {e}",
+                font=('Calibri', 12)
+            )
+            fallback_label.pack(expand=True)
+
+    def get_sheet_data(self):
+        """Get data from the sheet for mindmap integration"""
+        if self.sheet:
+            data = self.sheet.get_sheet_data()
+            # Filter out completely empty rows
+            return [row for row in data if any(cell.strip() if isinstance(cell, str) else cell for cell in row)]
+        return []
+
+    def get_current_columns(self):
+        """Get current column headers for mindmap integration"""
+        return self.current_columns.copy()
+
+    def update_sheet_data(self, data):
+        """Update sheet data from mindmap edits"""
+        if self.sheet:
+            self.sheet.set_sheet_data(data)
+            self.mark_unsaved()
+
     def create_ribbon(self):
         """Create Excel-style ribbon toolbar with tabs"""
-        # Main ribbon container
+        # Main ribbon container (row=1 because view tabs are at row=0)
         ribbon_wrapper = ttk.Frame(self.root)
-        ribbon_wrapper.grid(row=0, column=0, sticky=(tk.W, tk.E), padx=0, pady=0)
+        ribbon_wrapper.grid(row=1, column=0, sticky=(tk.W, tk.E), padx=0, pady=0)
 
         # Toggle button bar
         toggle_bar = ttk.Frame(ribbon_wrapper, relief=tk.RAISED, borderwidth=1)
@@ -551,11 +681,18 @@ class ExcelMasterChartApp:
         # Force window to update layout
         self.root.update_idletasks()
 
-    def create_data_grid_ribbon_style(self):
+    def create_data_grid_ribbon_style(self, parent=None):
         """Create maximized data grid for ribbon interface"""
+        # Use provided parent or default to root
+        if parent is None:
+            parent = self.root
+            grid_row = 1
+        else:
+            grid_row = 0
+
         # Main grid container
-        grid_frame = ttk.Frame(self.root, padding="10")
-        grid_frame.grid(row=1, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        grid_frame = ttk.Frame(parent, padding="10")
+        grid_frame.pack(fill=tk.BOTH, expand=True)
         grid_frame.columnconfigure(0, weight=1)
         grid_frame.rowconfigure(0, weight=1)
 
@@ -571,7 +708,7 @@ class ExcelMasterChartApp:
     def create_status_bar_bottom(self):
         """Create status bar at bottom of window"""
         status_frame = ttk.Frame(self.root, relief=tk.SUNKEN, borderwidth=1)
-        status_frame.grid(row=2, column=0, sticky=(tk.W, tk.E))
+        status_frame.grid(row=3, column=0, sticky=(tk.W, tk.E))
 
         # Left side: Status indicator
         self.status_label = ttk.Label(status_frame, text="● Ready", foreground="green")
@@ -785,6 +922,10 @@ class ExcelMasterChartApp:
 
         # Update row count
         self.update_row_count()
+
+        # Apply colors if live preview is enabled
+        if hasattr(self, 'live_preview_var') and self.live_preview_var.get():
+            self.root.after(100, self.apply_live_colors)  # Slight delay for sheet to render
 
     def get_column_unique_values(self, col_idx, max_values=50):
         """Get unique non-empty values from a column for auto-complete
@@ -1746,6 +1887,26 @@ class ExcelMasterChartApp:
         # Always auto-apply colors after cell modification (real-time color update)
         self.apply_live_colors()
 
+        # Auto-sync to mindmap with debouncing (300ms delay)
+        self._schedule_mindmap_sync()
+
+    def _schedule_mindmap_sync(self):
+        """Schedule mindmap sync with debouncing to avoid excessive updates while typing"""
+        # Cancel any pending sync
+        if self._mindmap_sync_timer:
+            self.root.after_cancel(self._mindmap_sync_timer)
+
+        # Schedule new sync after 300ms delay
+        self._mindmap_sync_timer = self.root.after(300, self._sync_mindmap)
+
+    def _sync_mindmap(self):
+        """Sync data to mindmap if it has column mapping set"""
+        self._mindmap_sync_timer = None
+        if hasattr(self, 'mindmap_panel') and self.mindmap_panel:
+            # Only sync if column mapping is already configured
+            if self.mindmap_panel.column_mapping:
+                self.mindmap_panel._refresh_mindmap()
+
     def check_crash_recovery(self):
         """Check for auto-save file and offer recovery"""
         if self.autosave_path.exists():
@@ -1858,6 +2019,10 @@ class ExcelMasterChartApp:
 
         self.update_row_count()
         self.mark_saved()
+
+        # Apply colors after loading if live preview is enabled
+        if self.live_preview_var.get():
+            self.apply_live_colors()
 
     # ========================================================================
     # IMPORT FROM CSV/EXCEL

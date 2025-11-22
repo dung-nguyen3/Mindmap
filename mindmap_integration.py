@@ -826,32 +826,13 @@ class MindmapViewPanel(ttk.Frame):
                 break
 
     def _on_node_edited(self, node_id: str, new_text: str):
-        """Handle node text edit in mindmap - sync back to Excel data"""
-        if self.syncing:
-            return
+        """Handle node text edit in mindmap - do NOT sync back to Excel
 
-        self.syncing = True
-
-        node = self.mindmap.nodes.get(node_id)
-        if node:
-            old_text = node.text if hasattr(node, '_old_text') else ""
-
-            # Find and update matching row in tree view
-            for item in self.data_tree.get_children():
-                values = list(self.data_tree.item(item, 'values'))
-                # Find column with old text and update it
-                for i, val in enumerate(values):
-                    if val == old_text or val == new_text:
-                        values[i] = new_text
-                        self.data_tree.item(item, values=values)
-
-                        # Also update the main Excel sheet via callback
-                        row_idx = self.data_tree.index(item)
-                        self._sync_row_to_excel(row_idx, values)
-                        break
-
-        self.sync_status_label.config(text="Modified", foreground="orange")
-        self.syncing = False
+        One-way sync only: Excel → Mindmap
+        Mindmap edits are independent and won't affect Excel data.
+        """
+        # Just update the status label - no syncing to Excel
+        self.sync_status_label.config(text="Mindmap edited (not synced)", foreground="blue")
 
     def _sync_row_to_excel(self, row_idx: int, values: list):
         """Sync a row from tree view back to main Excel data"""

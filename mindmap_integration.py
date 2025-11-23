@@ -715,7 +715,7 @@ class MindmapViewPanel(ttk.Frame):
         ttk.Button(btn_frame, text="Clear All", command=self._clear_all_columns).pack(side=tk.LEFT)
 
         # Instructions
-        ttk.Label(parent, text="Tab=indent | Backspace=outdent | Enter=new sibling | F2=edit",
+        ttk.Label(parent, text="Right/Tab=indent | Left/Backspace=outdent | Enter=sibling | F2=edit",
                  font=("Calibri", 9), foreground="gray").pack(anchor=tk.W, padx=5)
 
         # Hierarchy treeview
@@ -740,22 +740,27 @@ class MindmapViewPanel(ttk.Frame):
         tree_frame.columnconfigure(0, weight=1)
         tree_frame.rowconfigure(0, weight=1)
 
-        # Bind keyboard events
+        # Disable default Tab focus traversal for this widget
         self.hierarchy_tree.bind('<Tab>', self._tree_indent)
         self.hierarchy_tree.bind('<Shift-Tab>', self._tree_outdent)
+        self.hierarchy_tree.bind('<ISO_Left_Tab>', self._tree_outdent)  # Mac Shift+Tab
         self.hierarchy_tree.bind('<BackSpace>', self._tree_backspace)
         self.hierarchy_tree.bind('<Return>', self._tree_new_sibling)
         self.hierarchy_tree.bind('<F2>', self._tree_edit_node)
         self.hierarchy_tree.bind('<Double-1>', self._tree_edit_node)
         self.hierarchy_tree.bind('<Delete>', self._tree_delete_node)
 
+        # Alternative keys that work better on Mac
+        self.hierarchy_tree.bind('<Right>', self._tree_indent)  # Right arrow = indent
+        self.hierarchy_tree.bind('<Left>', self._tree_outdent)  # Left arrow = outdent
+
         # Right-click context menu
         self.tree_context_menu = tk.Menu(self, tearoff=0)
         self.tree_context_menu.add_command(label="Add Child", command=self._tree_add_child)
-        self.tree_context_menu.add_command(label="Add Sibling", command=self._tree_add_sibling)
+        self.tree_context_menu.add_command(label="Add Sibling (Enter)", command=self._tree_add_sibling)
         self.tree_context_menu.add_separator()
-        self.tree_context_menu.add_command(label="Indent (Tab)", command=lambda: self._tree_indent(None))
-        self.tree_context_menu.add_command(label="Outdent (Shift+Tab)", command=lambda: self._tree_outdent(None))
+        self.tree_context_menu.add_command(label="Indent (Right Arrow)", command=lambda: self._tree_indent(None))
+        self.tree_context_menu.add_command(label="Outdent (Left Arrow)", command=lambda: self._tree_outdent(None))
         self.tree_context_menu.add_separator()
         self.tree_context_menu.add_command(label="Edit (F2)", command=lambda: self._tree_edit_node(None))
         self.tree_context_menu.add_command(label="Delete", command=lambda: self._tree_delete_node(None))

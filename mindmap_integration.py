@@ -740,7 +740,12 @@ class MindmapViewPanel(ttk.Frame):
         tree_frame.columnconfigure(0, weight=1)
         tree_frame.rowconfigure(0, weight=1)
 
-        # Disable default Tab focus traversal for this widget
+        # Remove Treeview class bindings to prevent interference
+        # Default bindtags: (widget, 'Treeview', '.', 'all')
+        # New bindtags: (widget, '.', 'all') - removes 'Treeview' class bindings
+        self.hierarchy_tree.bindtags((str(self.hierarchy_tree), '.', 'all'))
+
+        # Bind our custom keys (now without class-level interference)
         self.hierarchy_tree.bind('<Tab>', self._tree_indent)
         self.hierarchy_tree.bind('<Shift-Tab>', self._tree_outdent)
         self.hierarchy_tree.bind('<ISO_Left_Tab>', self._tree_outdent)  # Mac Shift+Tab
@@ -750,9 +755,11 @@ class MindmapViewPanel(ttk.Frame):
         self.hierarchy_tree.bind('<Double-1>', self._tree_edit_node)
         self.hierarchy_tree.bind('<Delete>', self._tree_delete_node)
 
-        # Alternative keys that work better on Mac
-        self.hierarchy_tree.bind('<Right>', self._tree_indent)  # Right arrow = indent
-        self.hierarchy_tree.bind('<Left>', self._tree_outdent)  # Left arrow = outdent
+        # Arrow keys - Right/Left for indent/outdent, Up/Down for navigation
+        self.hierarchy_tree.bind('<Right>', self._tree_indent)
+        self.hierarchy_tree.bind('<Left>', self._tree_outdent)
+        self.hierarchy_tree.bind('<Up>', self._tree_move_up)
+        self.hierarchy_tree.bind('<Down>', self._tree_move_down)
 
         # Right-click context menu
         self.tree_context_menu = tk.Menu(self, tearoff=0)
@@ -982,6 +989,79 @@ class MindmapViewPanel(ttk.Frame):
         """Handle backspace - outdent if not editing"""
         # Outdent the selected item
         return self._tree_outdent(event)
+
+    def _tree_move_up(self, event):
+        """Move selection to previous visible item"""
+        selected = self.hierarchy_tree.selection()
+        if not selected:
+            # Select first item if nothing selected
+            children = self.hierarchy_tree.get_children()
+            if children:
+                self.hierarchy_tree.selection_set(children[0])
+                self.hierarchy_tree.focus(children[0])
+            return 'break'
+
+        item = selected[0]
+        prev_item = self.hierarchy_tree.prev(item)
+
+        if prev_item:
+            # If prev item has visible children, go to last descendant
+            while self.hierarchy_tree.item(prev_item, 'open') and self.hierarchy_tree.get_children(prev_item):
+                children = self.hierarchy_tree.get_children(prev_item)
+                prev_item = children[-1]
+            self.hierarchy_tree.selection_set(prev_item)
+            self.hierarchy_tree.focus(prev_item)
+            self.hierarchy_tree.see(prev_item)
+        else:
+            # Go to parent
+            parent = self.hierarchy_tree.parent(item)
+            if parent:
+                self.hierarchy_tree.selection_set(parent)
+                self.hierarchy_tree.focus(parent)
+                self.hierarchy_tree.see(parent)
+
+        return 'break'
+
+    def _tree_move_down(self, event):
+        """Move selection to next visible item"""
+        selected = self.hierarchy_tree.selection()
+        if not selected:
+            # Select first item if nothing selected
+            children = self.hierarchy_tree.get_children()
+            if children:
+                self.hierarchy_tree.selection_set(children[0])
+                self.hierarchy_tree.focus(children[0])
+            return 'break'
+
+        item = selected[0]
+
+        # If item is open and has children, go to first child
+        if self.hierarchy_tree.item(item, 'open') and self.hierarchy_tree.get_children(item):
+            first_child = self.hierarchy_tree.get_children(item)[0]
+            self.hierarchy_tree.selection_set(first_child)
+            self.hierarchy_tree.focus(first_child)
+            self.hierarchy_tree.see(first_child)
+            return 'break'
+
+        # Otherwise go to next sibling, or parent's next sibling
+        next_item = self.hierarchy_tree.next(item)
+        if next_item:
+            self.hierarchy_tree.selection_set(next_item)
+            self.hierarchy_tree.focus(next_item)
+            self.hierarchy_tree.see(next_item)
+        else:
+            # Go up to find next sibling of ancestor
+            parent = self.hierarchy_tree.parent(item)
+            while parent:
+                next_of_parent = self.hierarchy_tree.next(parent)
+                if next_of_parent:
+                    self.hierarchy_tree.selection_set(next_of_parent)
+                    self.hierarchy_tree.focus(next_of_parent)
+                    self.hierarchy_tree.see(next_of_parent)
+                    break
+                parent = self.hierarchy_tree.parent(parent)
+
+        return 'break'
 
     def _tree_new_sibling(self, event):
         """Add new sibling node after selected item"""

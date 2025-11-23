@@ -920,6 +920,18 @@ class MindmapViewPanel(ttk.Frame):
         if nodes_created == 0:
             messagebox.showinfo("Result", f"No hierarchy created.\nRows checked: {len(data)}\nRows with data: {rows_processed}\nSelected columns: {selected_cols}")
         else:
+            # Make sure Excel tab is selected so tree is visible
+            if hasattr(self, 'left_notebook'):
+                self.left_notebook.select(0)  # Select Excel tab
+
+            # Select first item and give focus to tree for keyboard navigation
+            root_items = self.hierarchy_tree.get_children()
+            if root_items:
+                self.hierarchy_tree.selection_set(root_items[0])
+                self.hierarchy_tree.focus(root_items[0])
+                self.hierarchy_tree.see(root_items[0])  # Scroll to make visible
+                self.hierarchy_tree.focus_set()  # Give keyboard focus to tree
+
             # Sync to mindmap
             self._sync_tree_to_mindmap()
 

@@ -764,9 +764,6 @@ class MindmapViewPanel(ttk.Frame):
         # Mac right-click
         self.hierarchy_tree.bind('<Button-2>', self._show_tree_context_menu)
 
-        # Keep reference to data_tree for backward compatibility
-        self.data_tree = self.hierarchy_tree
-
     def _create_outline_tab(self, parent):
         """Create outline text editor tab"""
         # Instructions
@@ -1435,9 +1432,6 @@ class MindmapViewPanel(ttk.Frame):
         elif mode == 'by_level':
             self._load_by_level(columns, data)
 
-        # Update tree view
-        self._update_tree_view()
-
         # Redraw mindmap
         self.mindmap.redraw()
         self.mindmap.fit_all()
@@ -1736,32 +1730,6 @@ class MindmapViewPanel(ttk.Frame):
                 if deeper_level > level:
                     del level_parents[deeper_level]
 
-    def _update_tree_view(self):
-        """Update the treeview with current Excel data"""
-        # Clear existing
-        for item in self.data_tree.get_children():
-            self.data_tree.delete(item)
-
-        columns = self.get_columns()
-        data = self.get_excel_data()
-
-        if not columns:
-            return
-
-        # Configure columns
-        self.data_tree['columns'] = columns
-        self.data_tree['show'] = 'headings'
-
-        for col in columns:
-            self.data_tree.heading(col, text=col)
-            self.data_tree.column(col, width=100, minwidth=50)
-
-        # Add data
-        for row in data:
-            if row and any(cell for cell in row):
-                values = [str(cell) if cell else "" for cell in row]
-                self.data_tree.insert('', 'end', values=values)
-
     # ========================================================================
     # EVENT HANDLERS
     # ========================================================================
@@ -1818,22 +1786,30 @@ class MindmapViewPanel(ttk.Frame):
             self.mindmap.redraw()  # Force redraw
 
     def _on_node_selected(self, node_id: str):
-        """Handle node selection in mindmap - highlight corresponding row in tree view"""
+        """Handle node selection in mindmap - highlight corresponding item in hierarchy tree"""
         if not node_id or node_id not in self.mindmap.nodes:
+            return
+
+        if not hasattr(self, 'hierarchy_tree'):
             return
 
         node = self.mindmap.nodes[node_id]
         node_text = node.text
 
-        # Find and select matching row in tree view
-        for item in self.data_tree.get_children():
-            values = self.data_tree.item(item, 'values')
-            # Check if any column contains the node text
-            if node_text in values:
-                self.data_tree.selection_set(item)
-                self.data_tree.focus(item)
-                self.data_tree.see(item)  # Scroll to make visible
-                break
+        # Find and select matching item in hierarchy tree
+        def find_item(parent=''):
+            for item in self.hierarchy_tree.get_children(parent):
+                if self.hierarchy_tree.item(item, 'text') == node_text:
+                    self.hierarchy_tree.selection_set(item)
+                    self.hierarchy_tree.focus(item)
+                    self.hierarchy_tree.see(item)
+                    return True
+                # Check children recursively
+                if find_item(item):
+                    return True
+            return False
+
+        find_item()
 
     def _on_node_edited(self, node_id: str, new_text: str):
         """Handle node text edit in mindmap - do NOT sync back to Excel
@@ -1864,64 +1840,6 @@ class MindmapViewPanel(ttk.Frame):
         """Handle structure change in mindmap"""
         self._update_status()
         self.sync_status_label.config(text="Modified", foreground="orange")
-
-    def _on_tree_double_click(self, event):
-        """Handle double-click in tree view for editing"""
-        item = self.data_tree.selection()
-        if not item:
-            return
-
-        # Get column clicked
-        column = self.data_tree.identify_column(event.x)
-        col_idx = int(column.replace('#', '')) - 1
-
-        if col_idx < 0:
-            return
-
-        # Create entry for editing
-        columns = self.get_columns()
-        if col_idx >= len(columns):
-            return
-
-        # Get current value
-        values = self.data_tree.item(item[0], 'values')
-        if col_idx >= len(values):
-            return
-
-        current_value = values[col_idx]
-
-        # Create popup entry
-        x, y, width, height = self.data_tree.bbox(item[0], column)
-
-        entry = ttk.Entry(self.data_tree)
-        entry.place(x=x, y=y, width=width, height=height)
-        entry.insert(0, current_value)
-        entry.select_range(0, tk.END)
-        entry.focus_set()
-
-        def save_edit(event=None):
-            new_value = entry.get()
-            new_values = list(values)
-            new_values[col_idx] = new_value
-            self.data_tree.item(item[0], values=new_values)
-            entry.destroy()
-
-            # Update Excel data - sync back to the main sheet
-            row_idx = self.data_tree.index(item[0])
-            self._sync_row_to_excel(row_idx, new_values)
-
-            # Also refresh mindmap to reflect changes
-            if self.column_mapping:
-                self.load_from_excel_data()
-
-            self.sync_status_label.config(text="Modified", foreground="orange")
-
-        def cancel_edit(event=None):
-            entry.destroy()
-
-        entry.bind('<Return>', save_edit)
-        entry.bind('<Escape>', cancel_edit)
-        entry.bind('<FocusOut>', save_edit)
 
     # ========================================================================
     # VIEW CONTROLS
@@ -2000,7 +1918,6 @@ class MindmapViewPanel(ttk.Frame):
                 with open(filepath, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                 self.mindmap.from_dict(data)
-                self._update_tree_view()
                 self._update_status()
                 messagebox.showinfo("Load", f"Mindmap loaded from {filepath}")
             except Exception as e:

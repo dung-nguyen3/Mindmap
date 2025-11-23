@@ -929,20 +929,46 @@ class MindmapViewPanel(ttk.Frame):
         if nodes_created == 0:
             messagebox.showinfo("Result", f"No hierarchy created.\nRows checked: {len(data)}\nRows with data: {rows_processed}\nSelected columns: {selected_cols}")
         else:
-            # Make sure Excel tab is selected so tree is visible
-            if hasattr(self, 'left_notebook'):
-                self.left_notebook.select(0)  # Select Excel tab
+            # Convert tree to text and populate Outline tab for easier editing
+            self._tree_to_outline()
 
-            # Select first item and give focus to tree for keyboard navigation
-            root_items = self.hierarchy_tree.get_children()
-            if root_items:
-                self.hierarchy_tree.selection_set(root_items[0])
-                self.hierarchy_tree.focus(root_items[0])
-                self.hierarchy_tree.see(root_items[0])  # Scroll to make visible
-                self.hierarchy_tree.focus_set()  # Give keyboard focus to tree
+            # Switch to Outline tab for natural text editing
+            if hasattr(self, 'left_notebook'):
+                self.left_notebook.select(1)  # Select Outline tab
+
+            # Set focus to outline text for immediate editing
+            if hasattr(self, 'outline_text'):
+                self.outline_text.focus_set()
+                self.outline_text.mark_set(tk.INSERT, '1.0')
 
             # Sync to mindmap
-            self._sync_tree_to_mindmap()
+            self._sync_outline_to_mindmap()
+
+    def _tree_to_outline(self):
+        """Convert hierarchy tree to indented text in Outline tab"""
+        if not hasattr(self, 'outline_text') or not hasattr(self, 'hierarchy_tree'):
+            return
+
+        lines = []
+
+        def traverse(item_id, depth=0):
+            """Recursively traverse tree and build indented text"""
+            text = self.hierarchy_tree.item(item_id, 'text')
+            if text:
+                indent = '\t' * depth
+                lines.append(f"{indent}{text}")
+
+            for child in self.hierarchy_tree.get_children(item_id):
+                traverse(child, depth + 1)
+
+        # Traverse all root items
+        for root_item in self.hierarchy_tree.get_children(''):
+            traverse(root_item, 0)
+
+        # Update outline text widget
+        self.outline_text.delete('1.0', tk.END)
+        if lines:
+            self.outline_text.insert('1.0', '\n'.join(lines))
 
     # ========================================================================
     # TREE KEYBOARD CONTROLS
